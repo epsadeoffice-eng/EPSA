@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1018">
+<title>E.P.S.A. | Interne Plattform</title>
+<style>
+:root {
+  --bg: #0b1018;
+  --panel: #121b27;
+  --border: #263447;
+  --text: #e7edf5;
+  --muted: #8997aa;
+  --red: #bd414b;
+  --green: #54bd8a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  background: #101722;
+  border-bottom: 1px solid var(--border);
+  padding: 22px 6%;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+.logo span { color: var(--red); }
+.tagline {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+.security {
+  color: #e78a8a;
+  border: 1px solid #713c45;
+  padding: 8px 12px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+nav {
+  display: flex;
+  gap: 24px;
+  padding: 16px 6%;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+nav a:hover { color: white; }
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 35px 6%;
+}
+.eyebrow {
+  color: var(--red);
+  font-size: 11px;
+  letter-spacing: 3px;
+  font-weight: bold;
+}
+h1 {
+  font-size: clamp(27px, 5vw, 43px);
+  margin: 12px 0;
+}
+.subtitle {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.section-title {
+  margin: 38px 0 17px;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 21px;
+  border-radius: 5px;
+}
+.card-label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.card-value {
+  font-size: 25px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+.green { color: var(--green); }
+.red { color: #e4777e; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  margin-top: 16px;
+  padding: 22px;
+}
+.entry {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.entry:last-child { border: 0; }
+.entry small {
+  color: var(--muted);
+  display: block;
+  margin-top: 5px;
+}
+.badge {
+  color: var(--green);
+  font-size: 10px;
+  white-space: nowrap;
+}
+footer {
+  border-top: 1px solid var(--border);
+  padding: 25px 6%;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  text-align: center;
+  margin-top: 55px;
+}
+@media(max-width:700px) {
+  .grid { grid-template-columns: 1fr; }
+  .top { align-items: flex-start; }
+  .security { font-size: 9px; }
+  main { padding-top: 28px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div>
+      <div class="logo">E<span>.</span>P<span>.</span>S<span>.</span>A<span>.</span></div>
+      <div class="tagline">ERWEITERTE PLATTFORM FÜR SYSTEMAUFKLÄRUNG</div>
+    </div>
+    <div class="security">INTERN · STUFE 04</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#start">ÜBERSICHT</a>
+  <a href="#lage">LAGEZENTRUM</a>
+  <a href="#berichte">BERICHTE</a>
+  <a href="#organisation">ORGANISATION</a>
+</nav>
+
+<main id="start">
+
+  <div class="eyebrow">ZENTRALE SYSTEMPLATTFORM</div>
+  <h1>Willkommen bei E.P.S.A.</h1>
+  <p class="subtitle">
+    Zentrale Informations- und Kontrollplattform der
+    Erweiterten Plattform für Systemaufklärung.
+    Zugriff nur für autorisierte Mitglieder.
+  </p>
+
+  <h2 class="section-title">SYSTEMÜBERSICHT</h2>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">SYSTEMSTATUS</div>
+      <div class="card-value green">AKTIV</div>
+    </div>
+    <div class="card">
+      <div class="card-label">SICHERHEITSSTUFE</div>
+      <div class="card-value">04 / 05</div>
+    </div>
+    <div class="card">
+      <div class="card-label">PLATTFORM</div>
+      <div class="card-value green">ONLINE</div>
+    </div>
+  </div>
+
+  <section id="lage">
+    <h2 class="section-title">LAGEZENTRUM</h2>
+    <div class="panel">
+      <div class="entry">
+        <div>
+          <strong>Zentrale Infrastruktur</strong>
+          <small>Interne Systemübersicht</small>
+        </div>
+        <span class="badge">● BETRIEBSBEREIT</span>
+      </div>
+      <div class="entry">
+        <div>
+          <strong>Informationsnetzwerk</strong>
+          <small>Kommunikationsstatus</small>
+        </div>
+        <span class="badge">● AKTIV</span>
+      </div>
+      <div class="entry">
+        <div>
+          <strong>Archivsystem</strong>
+          <small>Digitale Dokumentenverwaltung</small>
+        </div>
+        <span class="badge">● VERFÜGBAR</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="berichte">
+    <h2 class="section-title">INFORMATIONSZENTRUM</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">MODUL 01</div>
+        <h3>Lageberichte</h3>
+        <p class="subtitle">Übersicht interner Informationsberichte.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">MODUL 02</div>
+        <h3>Dokumentenarchiv</h3>
+        <p class="subtitle">Zentrale Übersicht der Organisationsdokumente.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">MODUL 03</div>
+        <h3>Systemprotokolle</h3>
+        <p class="subtitle">Technische Status- und Ereignisübersicht.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="organisation">
+    <h2 class="section-title">ORGANISATION</h2>
+    <div class="panel">
+      <h3>Erweiterte Plattform für Systemaufklärung</h3>
+      <p class="subtitle">
+        E.P.S.A. ist eine fiktive Organisation mit dem Ziel,
+        Informationen strukturiert aufzubereiten und
+        systematisch auszuwerten.
+      </p>
+      <p class="subtitle">Organisationskennung: EPSA-001</p>
+      <p class="subtitle">Plattformversion: 1.0</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  E.P.S.A. · ERWEITERTE PLATTFORM FÜR SYSTEMAUFKLÄRUNG<br>
+  FIKTIVE ORGANISATION · INTERNE PLATTFORM<br>
+  © 2026 E.P.S.A. · SYSTEMVERSION 1.0
+</footer>
+
+</body>
+</html>
