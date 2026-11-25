@@ -145,6 +145,23 @@ main{padding-block:22px 48px}
 .stage{position:relative;border:1px solid var(--line);height:clamp(380px,66vh,740px);background:#050b13;overflow:hidden}
 #lmap{position:absolute;inset:0;background:#050b13}
 
+
+.cnote{text-align:center;font:500 11px/1.5 var(--font-m);color:var(--dim);letter-spacing:.06em}
+.cnote.on{color:var(--ok)}
+.who{font:500 12px/1.3 var(--font-m);color:var(--accent2);letter-spacing:.06em;text-align:right}
+.cbanner{margin:10px 0 0;border:1px solid var(--warn);background:rgba(255,176,32,.08);color:var(--warn);padding:10px 12px;font:500 12px/1.5 var(--font-m)}
+.chatbox{max-width:760px;padding:0;gap:0}
+.msgs{height:min(55vh,520px);overflow:auto;padding:14px;display:grid;gap:10px;align-content:start}
+.msg{max-width:85%;border:1px solid var(--line);background:var(--panel2);padding:8px 10px;justify-self:start;min-width:0}
+.msg.me{justify-self:end;border-color:var(--accent);background:var(--accent-bg)}
+.msg .h{font:500 11px/1.4 var(--font-m);color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.msg .h button{background:none;border:0;color:var(--dim);cursor:pointer;font:500 11px var(--font-m);padding:0;text-decoration:underline}
+.msg .tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.chatform{display:flex;gap:10px;padding:12px;border-top:1px solid var(--line)}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:650}
+.badge.strike{left:50%;right:auto;top:auto;bottom:34px;transform:translateX(-50%);border-color:var(--bad);color:var(--bad);z-index:700;text-align:center;width:max-content;max-width:calc(100% - 24px)}
+.strike-on #lmap,.strike-on #lmap .leaflet-grab,.strike-on #offUI canvas{cursor:crosshair!important}
+#strikeBtn[aria-pressed="true"]{border-color:var(--bad);color:var(--bad);background:rgba(255,77,94,.1)}
 .ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .ncard{border:1px solid var(--line);background:var(--panel);padding:14px;display:grid;gap:8px;align-content:start;min-width:0}
 .ncard.flash{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn)}
@@ -209,6 +226,7 @@ main{padding-block:22px 48px}
       <input id="pw" name="pw" type="password" inputmode="numeric" autocomplete="off"></div>
     <div class="err" id="err" role="alert"></div>
     <button class="btn primary" type="submit">Zugang anfordern</button>
+    <div class="cnote" id="cloudNote" role="status"></div>
     <div class="classif">Vertraulich · Unbefugter Zugriff wird protokolliert</div>
   </form>
 </div>
@@ -221,14 +239,18 @@ main{padding-block:22px 48px}
       <button class="tab" role="tab" id="tab-akten" aria-selected="true" data-view="akten">Akten</button>
       <button class="tab" role="tab" id="tab-karte" aria-selected="false" data-view="karte">Weltkarte</button>
       <button class="tab" role="tab" id="tab-notes" aria-selected="false" data-view="notes">Notizen</button>
+      <button class="tab" role="tab" id="tab-chat" aria-selected="false" data-view="chat">Chat</button>
+      <button class="tab" role="tab" id="tab-profiles" aria-selected="false" data-view="profiles" hidden>Profile</button>
       <button class="tab" role="tab" id="tab-browser" aria-selected="false" data-view="browser">Browser</button>
     </nav>
     <div class="right">
+      <div class="who" id="who"></div>
       <div class="clock" id="clock" aria-label="Uhrzeit"></div>
       <button class="btn ghost sm" id="logout" type="button">Abmelden</button>
     </div>
   </header>
 
+  <div class="cbanner" id="cbanner" role="alert" hidden></div>
   <main>
     <!-- Akten-Register -->
     <section id="view-akten">
@@ -247,6 +269,12 @@ main{padding-block:22px 48px}
     <section id="view-karte" hidden>
       <div class="mapbar">
         <div class="seg" id="layers" role="group" aria-label="Ebenen"></div>
+        <div class="seg" id="strikeBar" role="group" aria-label="Einschlag-Modus">
+          <button class="chip" id="strikeBtn" type="button" aria-pressed="false">Einschlag-Modus</button>
+          <button class="chip" id="strikeSnd" type="button" aria-pressed="false" hidden>Ton aus</button>
+          <button class="chip" id="strikeClear" type="button" hidden>Zurücksetzen</button>
+          <span class="count mono" id="strikeCount"></span>
+        </div>
         <form id="geoForm" class="seg" style="flex-wrap:nowrap"><input class="search" id="geo" type="search" placeholder="Ort suchen" aria-label="Ort suchen" autocomplete="off"><button class="btn sm" type="submit">Suchen</button></form>
       </div>
       <div class="seg" id="basebar" role="group" aria-label="Kartenart" style="margin-bottom:10px"></div>
@@ -256,11 +284,41 @@ main{padding-block:22px 48px}
         <div class="stage brk" id="stage">
           <div id="lmap" aria-label="Weltkarte"></div>
           <div id="offUI" hidden><canvas id="map" aria-label="Weltkarte"></canvas><div class="badge">ECHTE WELTKARTE (NATURAL EARTH). FLÜGE UND ZÜGE SIND HIER SIMULIERT. LIVE-DATEN NUR IN DER DATEI EPSA-DASHBOARD.HTML</div><div class="zoom"><button id="zin" aria-label="Hineinzoomen">+</button><button id="zout" aria-label="Herauszoomen">−</button><button id="zhome" aria-label="Weltansicht" style="font-size:12px">◎</button></div></div>
+          <canvas id="fx" aria-hidden="true"></canvas>
+          <div class="badge strike" id="strikeBadge" hidden>EINSCHLAG-MODUS AKTIV · KLICKE AUF DIE KARTE · REIN VISUELLER EFFEKT</div>
           <div class="readout" id="readout"></div>
           
         </div>
         <aside class="side brk" id="side" aria-live="polite"></aside>
       </div>
+    </section>
+
+    <!-- Chat -->
+    <section id="view-chat" hidden>
+      <div class="bar"><div><div class="lbl">Interner Kanal für alle Profile</div><h2>Chat</h2><div class="count" id="chatInfo"></div></div></div>
+      <div class="empty" id="chatOff" hidden>Der Chat braucht den gemeinsamen Server-Speicher. Er läuft nur in der veröffentlichten Version, nicht in der heruntergeladenen Datei.</div>
+      <div class="side brk chatbox" id="chatBox" hidden>
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <form class="chatform" id="chatForm" autocomplete="off">
+          <input class="search" id="chatIn" maxlength="1000" placeholder="Nachricht schreiben" aria-label="Nachricht" style="flex:1 1 auto;width:auto">
+          <button class="btn primary" type="submit">Senden</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Profile -->
+    <section id="view-profiles" hidden>
+      <div class="bar"><div><div class="lbl">Nur für den Admin</div><h2>Profile</h2><div class="count" id="profCount"></div></div></div>
+      <form id="profForm" class="side brk" style="max-width:560px;margin-bottom:18px" autocomplete="off">
+        <div class="lbl">Neues Profil anlegen</div>
+        <div class="field"><label class="lbl" for="pName">Name</label><input id="pName" maxlength="40" required></div>
+        <div class="field"><label class="lbl" for="pCode">Zugangscode (3 bis 20 Zeichen, Ziffern oder Buchstaben)</label><input id="pCode" maxlength="20" required></div>
+        <div class="field"><label class="lbl" for="pPw">Passwort (mindestens 4 Zeichen)</label><input id="pPw" type="password" maxlength="60" required></div>
+        <div class="note">Das Passwort ist der Schlüssel für die Daten dieses Profils. Es lässt sich nicht zurücksetzen. Wer es vergisst, verliert die Daten. Wähle lieber ein langes Passwort.</div>
+        <div class="err" id="pErr" role="alert"></div>
+        <button class="btn primary" type="submit">Profil anlegen</button>
+      </form>
+      <div class="ngrid" id="profList"></div>
     </section>
 
     <!-- Notizen -->
@@ -289,7 +347,7 @@ main{padding-block:22px 48px}
         <div class="lbl">Sicherung</div><h3>Akten und Notizen sichern</h3>
         <p>Alles wird nur in diesem Browser gespeichert. Mit der Sicherung nimmst du deine Daten auf ein anderes Gerät mit.</p>
         <textarea id="bk" class="search" rows="5" style="width:100%;font-size:12px" placeholder="Hier erscheint die Sicherung. Zum Einlesen fügst du hier eine Sicherung ein." aria-label="Sicherung"></textarea>
-        <div class="actions" style="justify-content:flex-start"><button class="btn sm" id="bkMake" type="button">Sicherung erstellen</button><button class="btn sm ghost" id="bkLoad" type="button">Sicherung einlesen</button></div>
+        <div class="actions" style="justify-content:flex-start"><button class="btn sm" id="bkMake" type="button">Sicherung erstellen</button><button class="btn sm ghost" id="bkLoad" type="button">Sicherung einlesen</button><button class="btn sm ghost" id="bkLocal" type="button" hidden>Lokale Daten übernehmen</button></div>
         <div class="err" id="bkMsg" role="status" style="color:var(--ok)"></div>
       </div>
     </section>
@@ -358,17 +416,212 @@ var reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').ma
 $('#logoBig').src=LOGO; $('#logoSm').src=LOGO;
 
 /* ---------- Login ---------- */
-var CODE='31492', PASS='1324';
+
+/* ---------- Server-Speicher (gemeinsam, pro Profil verschlüsselt) ---------- */
+var CL={on:false,db:null,usr:null,me:null,key:null,unsubs:[],canAdmin:false,seq:{akten:0,notes:0},last:{akten:{},notes:{}},busy:{akten:false,notes:false},again:{akten:false,notes:false},chatFirst:true,ready:null};
+var CODE='31492', PASS='1324', ADMIN_SALT='EPSA-ADMIN-SALT-v1';
+function b64(buf){var u=new Uint8Array(buf),t='';for(var i=0;i<u.length;i+=8192)t+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(t)}
+function unb64(t){var r=atob(t),u=new Uint8Array(r.length);for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u}
+function deriveKey(code,pw,salt){
+  return crypto.subtle.importKey('raw',new TextEncoder().encode(code+':'+pw),'PBKDF2',false,['deriveKey']).then(function(base){
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  });
+}
+function enc(key,obj){
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(JSON.stringify(obj))).then(function(ct){return {iv:b64(iv),c:b64(ct)}});
+}
+function dec(key,d){
+  if(!d||typeof d.iv!=='string'||typeof d.c!=='string')return Promise.resolve(null);
+  return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(d.iv)},key,unb64(d.c)).then(function(pt){return JSON.parse(new TextDecoder().decode(pt))},function(){return null});
+}
+function withTimeout(p,ms){return Promise.race([p,new Promise(function(_,rej){setTimeout(function(){rej({code:'timeout'})},ms)})])}
+function writeErr(e){
+  var c=e&&e.code;
+  if(c==='invalid_argument')return 'Speichern nicht erlaubt. Dein Zugang zur Seite braucht Mitwirken-Rechte (für Profile: Bearbeiten-Rechte).';
+  if(c==='quota_exceeded')return 'Der Speicher dieser Seite ist voll.';
+  if(c==='timeout'||c==='unavailable')return 'Server nicht erreichbar. Bitte später erneut versuchen.';
+  if(c==='revoked')return 'Dein Zugriff auf diese Seite wurde entzogen.';
+  return 'Speichern fehlgeschlagen.';
+}
+function setBanner(t){var b=$('#cbanner');b.textContent=t||'';b.hidden=!t}
+function cloudNote(){var n=$('#cloudNote');n.textContent=CL.on?'Server-Speicher aktiv. Deine Daten sind mit deinem Passwort verschlüsselt.':'Lokaler Modus. Daten bleiben in diesem Browser.';n.className='cnote'+(CL.on?' on':'')}
+CL.ready=(function(){
+  if(!(window.claude&&window.claude.use&&window.crypto&&crypto.subtle))return Promise.resolve();
+  return Promise.all([claude.use('db'),claude.use('user')]).then(function(r){CL.db=r[0];CL.usr=r[1];CL.on=!!CL.db}).catch(function(){});
+})().then(cloudNote);
+
+function tryLogin(c,p){
+  var isAdmin=(c===CODE&&p===PASS);
+  if(!CL.on)return Promise.resolve(isAdmin?{ok:true,me:{code:c,name:'Admin',admin:true}}:{});
+  if(isAdmin)return deriveKey(c,p,new TextEncoder().encode(ADMIN_SALT)).then(function(k){return {ok:true,key:k,me:{code:c,name:'Admin',admin:true}}});
+  if(!/^[A-Za-z0-9_-]{3,20}$/.test(c))return Promise.resolve({});
+  return withTimeout(CL.db.doc('profiles/'+c).get(),10000).then(function(snap){
+    if(!snap.exists)return {};
+    var d=snap.data(); if(!d||typeof d.salt!=='string'||!d.check)return {};
+    return deriveKey(c,p,unb64(d.salt)).then(function(k){
+      return dec(k,d.check).then(function(chk){
+        if(!chk||chk.ok!=='EPSA')return {};
+        return {ok:true,key:k,me:{code:c,name:String(d.name||c).slice(0,40),admin:false}};
+      });
+    });
+  });
+}
+function sortRecs(kind,a){
+  return a.sort(function(x,y){var tx=(kind==='akten'?x.ts:x.t)||0,ty=(kind==='akten'?y.ts:y.t)||0;return ty-tx||(x.id<y.id?1:-1)});
+}
+function subColl(kind,apply){
+  var coll=CL.db.doc('userdata/'+CL.me.code).collection(kind);
+  var u=coll.onSnapshot(function(snap){
+    var n=++CL.seq[kind], docs=snap.docs.slice(), out=[], map={};
+    Promise.all(docs.map(function(d){return dec(CL.key,d.data())})).then(function(arr){
+      if(n!==CL.seq[kind]||!CL.me)return;
+      arr.forEach(function(o){if(o&&typeof o.id==='string'){out.push(o);map[o.id]=JSON.stringify(o)}});
+      CL.last[kind]=map; apply(sortRecs(kind,out));
+    });
+  },function(e){setBanner('Speicher nicht erreichbar ('+((e&&e.code)||'Fehler')+').')});
+  CL.unsubs.push(u);
+}
+function cloudSync(kind){
+  if(CL.busy[kind]){CL.again[kind]=true;return}
+  CL.busy[kind]=true;
+  var coll=CL.db.doc('userdata/'+CL.me.code).collection(kind), key=CL.key;
+  (function run(){
+    CL.again[kind]=false;
+    var list=(kind==='akten'?recs:notes).slice(), last=CL.last[kind], ids={}, jobs=[];
+    list.forEach(function(r){ids[r.id]=1;var j=JSON.stringify(r);if(last[r.id]!==j)jobs.push(function(){return enc(key,r).then(function(e){return coll.doc(r.id).set(e)}).then(function(){last[r.id]=j})})});
+    Object.keys(last).forEach(function(id){if(!ids[id])jobs.push(function(){return coll.doc(id).delete().then(function(){delete last[id]})})});
+    var p=Promise.resolve(); jobs.forEach(function(j){p=p.then(j)});
+    p.then(function(){setBanner('')},function(e){setBanner(writeErr(e))}).then(function(){if(CL.again[kind])run();else CL.busy[kind]=false});
+  })();
+}
+function startData(){
+  applyRole();
+  if(!CL.on){loadRecs();loadNotes();renderRecs();renderNotes();pinNotes();return}
+  recs=[];notes=[];renderRecs();renderNotes();pinNotes();
+  CL.last={akten:{},notes:{}}; CL.chatFirst=true;
+  subColl('akten',function(a){recs=a;renderRecs()});
+  subColl('notes',function(a){notes=a;renderNotes();pinNotes()});
+  startChat();
+  if(CL.usr){
+    CL.usr.can('data.write').then(function(v){if(v===false)setBanner('Du hast nur Leserechte. Der Besitzer muss dir Mitwirken-Rechte geben, damit du speichern und chatten kannst.')});
+    CL.usr.canEdit().then(function(v){CL.canAdmin=!!v;applyRole();if(v&&CL.me&&CL.me.admin)startProfiles()});
+  }
+}
+function stopData(){
+  CL.unsubs.forEach(function(u){try{u()}catch(e){}}); CL.unsubs=[]; CL.seq.akten++;CL.seq.notes++;
+  CL.me=null;CL.key=null;CL.canAdmin=false;recs=[];notes=[];setBanner('');
+  $('#msgs').textContent='';$('#profList').textContent='';
+}
+function applyRole(){
+  var me=CL.me;
+  $('#who').textContent=me?(me.name+' · '+(CL.on?'Server':'lokal')):'';
+  $('#tab-profiles').hidden=!(CL.on&&me&&me.admin&&CL.canAdmin);
+  $('#bkLocal').hidden=!CL.on;
+}
+
+/* Chat */
+function startChat(){
+  var u=CL.db.collection('chat').orderBy('t','desc').limit(100).onSnapshot(function(snap){
+    var list=snap.docs.map(function(d){var x=d.data()||{};return {id:d.id,t:x.t,from:x.from,name:x.name,text:x.text}}).reverse();
+    renderChat(list);
+  },function(e){setBanner('Chat nicht erreichbar ('+((e&&e.code)||'Fehler')+').')});
+  CL.unsubs.push(u);
+  if(CL.me.admin)pruneChat();
+}
+function renderChat(list){
+  var box=$('#msgs'), bottom=CL.chatFirst||box.scrollTop+box.clientHeight>=box.scrollHeight-40;
+  box.textContent='';
+  $('#chatInfo').textContent=list.length+' Nachrichten';
+  if(!list.length){box.appendChild(el('div','empty','Noch keine Nachrichten. Schreibe die erste.'));return}
+  list.forEach(function(m){
+    var mine=CL.me&&m.from===CL.me.code, c=el('div','msg'+(mine?' me':'')), h=el('div','h');
+    h.appendChild(el('span',null,String(m.name||'?').slice(0,40)));
+    h.appendChild(el('span',null,isFinite(m.t)?new Date(m.t).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''));
+    if(mine||(CL.me&&CL.me.admin)){var b=el('button',null,'löschen');b.type='button';b.addEventListener('click',function(){CL.db.doc('chat/'+m.id).delete().catch(function(e){setBanner(writeErr(e))})});h.appendChild(b)}
+    c.appendChild(h); c.appendChild(el('div','tx',String(m.text||'').slice(0,1000))); box.appendChild(c);
+  });
+  if(bottom){box.scrollTop=box.scrollHeight;if(view==='chat')CL.chatFirst=false}
+}
+function pruneChat(){
+  CL.db.collection('chat').orderBy('t','asc').limit(1000).get().then(function(s){
+    if(s.size<600)return; var extra=s.docs.slice(0,s.size-300), p=Promise.resolve();
+    extra.forEach(function(d){p=p.then(function(){return CL.db.doc('chat/'+d.id).delete()})});
+  }).catch(function(){});
+}
+$('#chatForm').addEventListener('submit',function(e){
+  e.preventDefault(); var t=$('#chatIn').value.trim(); if(!t||!CL.on||!CL.me)return; $('#chatIn').value='';
+  CL.db.collection('chat').add({t:Date.now(),from:CL.me.code,name:CL.me.name,text:t.slice(0,1000)}).catch(function(err){setBanner(writeErr(err))});
+});
+
+/* Profile (nur Admin) */
+var profUnsub=null;
+function startProfiles(){
+  if(profUnsub)return;
+  profUnsub=CL.db.collection('profiles').onSnapshot(function(snap){
+    var l=$('#profList'); l.textContent=''; $('#profCount').textContent=snap.size+' Profile';
+    if(!snap.size){l.appendChild(el('div','empty','Noch keine Profile. Lege oben das erste an.'));return}
+    snap.docs.forEach(function(d){
+      var x=d.data()||{}, c=el('div','ncard');
+      c.appendChild(el('h3',null,String(x.name||d.id)));
+      var m=el('div','meta','Zugangscode '+d.id+(isFinite(x.created)?'\nangelegt '+new Date(x.created).toLocaleDateString('de-DE'):'')); m.style.whiteSpace='pre-line'; c.appendChild(m);
+      var del=el('button','btn sm danger','Profil löschen'); del.type='button'; var armed=false;
+      del.addEventListener('click',function(){
+        if(!armed){armed=true;del.textContent='Wirklich löschen? Alle Daten gehen verloren.';return}
+        deleteProfile(d.id).catch(function(e){setBanner(writeErr(e))});
+      });
+      c.appendChild(del); l.appendChild(c);
+    });
+  },function(e){setBanner('Profile nicht erreichbar ('+((e&&e.code)||'Fehler')+').')});
+  CL.unsubs.push(function(){if(profUnsub){profUnsub();profUnsub=null}});
+}
+function deleteProfile(code){
+  return CL.db.doc('profiles/'+code).delete().then(function(){
+    var base=CL.db.doc('userdata/'+code); var p=Promise.resolve();
+    ['akten','notes'].forEach(function(k){p=p.then(function(){return base.collection(k).get()}).then(function(s){var q=Promise.resolve();s.docs.forEach(function(d){q=q.then(function(){return base.collection(k).doc(d.id).delete()})});return q})});
+    return p;
+  });
+}
+$('#profForm').addEventListener('submit',function(ev){
+  ev.preventDefault(); var err=$('#pErr'); err.style.color='var(--bad)'; err.textContent='';
+  var name=$('#pName').value.trim(), code=$('#pCode').value.trim(), pw=$('#pPw').value;
+  if(!name){err.textContent='Bitte einen Namen eintragen.';return}
+  if(!/^[A-Za-z0-9_-]{3,20}$/.test(code)){err.textContent='Der Code braucht 3 bis 20 Zeichen: Ziffern, Buchstaben, - oder _.';return}
+  if(code===CODE){err.textContent='Dieser Code ist für den Admin reserviert.';return}
+  if(pw.length<4){err.textContent='Das Passwort braucht mindestens 4 Zeichen.';return}
+  if(!CL.on){err.textContent='Profile gibt es nur mit Server-Speicher.';return}
+  var salt=crypto.getRandomValues(new Uint8Array(16));
+  CL.db.doc('profiles/'+code).get().then(function(ex){
+    if(ex.exists){err.textContent='Diesen Code gibt es schon.';return}
+    return deriveKey(code,pw,salt).then(function(k){return enc(k,{ok:'EPSA'})}).then(function(check){
+      return CL.db.doc('profiles/'+code).set({name:name.slice(0,40),salt:b64(salt),check:check,created:Date.now()});
+    }).then(function(){$('#profForm').reset();err.style.color='var(--ok)';err.textContent='Profil „'+name+'“ angelegt. Gib Code und Passwort an die Person weiter.'});
+  }).catch(function(e){err.textContent=writeErr(e)});
+});
+$('#bkLocal').addEventListener('click',function(){
+  var a=null,n=null; try{a=JSON.parse(store(KEY)||'null');n=JSON.parse(store(NKEY)||'null')}catch(e){}
+  var na=0,nn=0;
+  (Array.isArray(a)?a:[]).forEach(function(r){if(r&&typeof r.id==='string'&&!recs.some(function(x){return x.id===r.id})){recs.push(r);na++}});
+  (Array.isArray(n)?n:[]).forEach(function(r){if(r&&typeof r.id==='string'&&!notes.some(function(x){return x.id===r.id})){notes.push(r);nn++}});
+  saveRecs();saveNotes();renderRecs();renderNotes();bkMsg(na+' Akten und '+nn+' Notizen aus diesem Browser übernommen.');
+});
 var gate=$('#gate');
 gate.addEventListener('submit',function(ev){
   ev.preventDefault();
-  var c=$('#code').value.trim(), p=$('#pw').value.trim();
-  if(c===CODE&&p===PASS){ $('#err').textContent=''; sstore('epsa.auth','1'); bootSequence(); }
-  else{
-    $('#err').textContent='Zugang verweigert. Code oder Passwort ist falsch.';
-    gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake');
-    $('#pw').value=''; $('#code').focus();
-  }
+  var c=$('#code').value.trim(), p=$('#pw').value.trim(), btn=gate.querySelector('button[type=submit]');
+  btn.disabled=true; $('#err').textContent=CL.on?'Prüfe Zugang …':'';
+  CL.ready.then(function(){return tryLogin(c,p)}).catch(function(e){return {err:(e&&e.code==='timeout')?'Server nicht erreichbar. Bitte später erneut versuchen.':'Anmeldung fehlgeschlagen.'}}).then(function(res){
+    btn.disabled=false;
+    if(res&&res.ok){
+      $('#err').textContent=''; CL.me=res.me; CL.key=res.key||null;
+      if(!CL.on)sstore('epsa.auth','1');
+      bootSequence();
+    }else{
+      $('#err').textContent=(res&&res.err)||'Zugang verweigert. Code oder Passwort ist falsch.';
+      gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake');
+      $('#pw').value=''; $('#code').focus();
+    }
+  });
 });
 function bootSequence(){
   if(reduced){enter();return}
@@ -385,11 +638,12 @@ function bootSequence(){
 var entered=false;
 function enter(){
   $('#login').hidden=true; $('#app').hidden=false;
-  if(!entered){entered=true; initRecords(); loadNotes(); renderNotes(); initMap(); tick(); setInterval(tick,1000)}
+  if(!entered){entered=true; initRecords(); initMap(); fxInit(); tick(); setInterval(tick,1000)}
+  startData();
   showView('akten'); window.scrollTo(0,0);
 }
 $('#logout').addEventListener('click',function(){
-  sstore('epsa.auth',null); $('#app').hidden=true; $('#login').hidden=false; $('#code').value=''; $('#pw').value='';
+  sstore('epsa.auth',null); stopData(); renderRecs(); renderNotes(); pinNotes(); fxMode(false); $('#app').hidden=true; $('#login').hidden=false; $('#code').value=''; $('#pw').value='';
   stopLoop(); window.scrollTo(0,0); $('#code').focus();
 });
 function tick(){
@@ -405,11 +659,13 @@ function tick(){
 var view='akten';
 function showView(v){
   view=v;
-  ['akten','karte','notes','browser'].forEach(function(n){
+  ['akten','karte','notes','chat','profiles','browser'].forEach(function(n){
     $('#view-'+n).hidden=v!==n; $('#tab-'+n).setAttribute('aria-selected',v===n);
   });
   if(v==='karte'){resizeMap(); startLoop()} else stopLoop();
   if(v==='browser')$('#ddgQ').focus();
+  if(v==='chat'){$('#chatOff').hidden=CL.on;$('#chatBox').hidden=!CL.on;if(CL.on){var mb=$('#msgs');mb.scrollTop=mb.scrollHeight;CL.chatFirst=false;$('#chatIn').focus()}}
+  if(v==='karte'&&FX.scars.length&&!FX.raf)FX.raf=requestAnimationFrame(fxFrame);
 }
 /* Browser-Reiter: DuckDuckGo erlaubt kein Einbetten, die Suche öffnet in einem neuen Tab */
 (function(){
@@ -439,12 +695,12 @@ function loadRecs(){
   recs=arr.filter(function(r){return !r.example});
 }
 function saveRecs(){
+  if(CL.on){cloudSync('akten');return}
   memFallback=recs;
   var ok=store(KEY,JSON.stringify(recs));
   if(!ok){ $('#count').textContent='Speichern im Browser nicht möglich. Akten gehen beim Schließen verloren.' ; }
 }
 function initRecords(){
-  loadRecs();
   $('#q').addEventListener('input',function(){query=this.value.trim().toLowerCase();renderRecs()});
   $('#newRec').addEventListener('click',function(){openForm(null)});
   renderRecs();
@@ -537,7 +793,7 @@ $('#recForm').addEventListener('submit',function(ev){
   if(isNaN(age)||age<0||age>130){$('#formErr').textContent='Bitte ein Alter zwischen 0 und 130 eintragen.';return}
   var data={name:name,age:age,status:$('#fStatus').value,place:$('#fPlace').value.trim(),notes:$('#fNotes').value.trim(),photo:photoData};
   if(editing){var r=recs.find(function(x){return x.id===editing}); Object.keys(data).forEach(function(k){r[k]=data[k]})}
-  else{data.id=$('#formId').textContent; recs.unshift(data)}
+  else{data.id=$('#formId').textContent; data.ts=Date.now(); recs.unshift(data)}
   saveRecs(); closeOv('formOv'); renderRecs();
 });
 function closeOv(id){$('#'+id).hidden=true}
@@ -551,7 +807,7 @@ function loadNotes(){
   var raw=store(NKEY), arr=null; if(raw){try{arr=JSON.parse(raw)}catch(e){arr=null}}
   if(!arr&&nMem)arr=nMem; if(!Array.isArray(arr))arr=[]; notes=arr;
 }
-function saveNotes(){nMem=notes; if(!store(NKEY,JSON.stringify(notes)))$('#ncount').textContent='Speichern im Browser nicht möglich. Notizen gehen beim Schließen verloren.'; pinNotes()}
+function saveNotes(){if(CL.on){cloudSync('notes');pinNotes();return}nMem=notes; if(!store(NKEY,JSON.stringify(notes)))$('#ncount').textContent='Speichern im Browser nicht möglich. Notizen gehen beim Schließen verloren.'; pinNotes()}
 function hasPos(n){return isFinite(parseFloat(n.lat))&&isFinite(parseFloat(n.lon))&&n.lat!==''&&n.lon!==''&&n.lat!=null&&n.lon!=null}
 function pinNotes(){
   if(typeof LG==='undefined'||!LG.notes)return; LG.notes.clearLayers();
@@ -620,16 +876,82 @@ $('#bkLoad').addEventListener('click',function(){
   var na=0,nn=0;
   d.akten.forEach(function(r){
     if(!r||typeof r.id!=='string'||typeof r.name!=='string')return;
-    var age=parseInt(r.age,10); var rec={id:r.id.slice(0,24),name:r.name.slice(0,60),age:isFinite(age)?age:0,status:STATI.indexOf(r.status)>=0?r.status:'Neutral',place:String(r.place||'').slice(0,60),notes:String(r.notes||'').slice(0,1500),photo:(typeof r.photo==='string'&&r.photo.indexOf('data:image/')===0)?r.photo:null};
+    var age=parseInt(r.age,10); var rec={id:r.id.replace(/[^A-Za-z0-9_.~:@+-]/g,'_').slice(0,24),name:r.name.slice(0,60),age:isFinite(age)?age:0,status:STATI.indexOf(r.status)>=0?r.status:'Neutral',place:String(r.place||'').slice(0,60),notes:String(r.notes||'').slice(0,1500),photo:(typeof r.photo==='string'&&r.photo.indexOf('data:image/')===0)?r.photo:null};
     var i=recs.findIndex(function(x){return x.id===rec.id}); if(i>=0)recs[i]=rec; else recs.push(rec); na++;
   });
   d.notizen.forEach(function(r){
     if(!r||typeof r.id!=='string'||typeof r.title!=='string')return;
-    var rec={id:r.id.slice(0,40),title:r.title.slice(0,80),cat:['Allgemein','Person','Ort','Ereignis','Aufgabe'].indexOf(r.cat)>=0?r.cat:'Allgemein',text:String(r.text||'').slice(0,5000),lat:isFinite(parseFloat(r.lat))?parseFloat(r.lat):null,lon:isFinite(parseFloat(r.lon))?parseFloat(r.lon):null,t:isFinite(r.t)?r.t:Date.now()};
+    var rec={id:r.id.replace(/[^A-Za-z0-9_.~:@+-]/g,'_').slice(0,40),title:r.title.slice(0,80),cat:['Allgemein','Person','Ort','Ereignis','Aufgabe'].indexOf(r.cat)>=0?r.cat:'Allgemein',text:String(r.text||'').slice(0,5000),lat:isFinite(parseFloat(r.lat))?parseFloat(r.lat):null,lon:isFinite(parseFloat(r.lon))?parseFloat(r.lon):null,t:isFinite(r.t)?r.t:Date.now()};
     var i=notes.findIndex(function(x){return x.id===rec.id}); if(i>=0)notes[i]=rec; else notes.push(rec); nn++;
   });
   saveRecs(); saveNotes(); renderRecs(); renderNotes(); bkMsg(na+' Akten und '+nn+' Notizen eingelesen.');
 });
+
+/* ---------- Einschlag-Modus (rein visueller Effekt, keine echte Wirkung) ---------- */
+var FX={on:false,fx:[],scars:[],sound:false,raf:0,project:null,cv:null,ctx:null,w:0,h:0,dpr:1,ac:null,count:0};
+function fxInit(){
+  FX.cv=$('#fx'); FX.ctx=FX.cv.getContext('2d');
+  new ResizeObserver(fxSize).observe($('#stage')); fxSize();
+  $('#strikeBtn').addEventListener('click',function(){fxMode(!FX.on)});
+  $('#strikeClear').addEventListener('click',function(){FX.fx=[];FX.scars=[];FX.count=0;fxUi()});
+  $('#strikeSnd').addEventListener('click',function(){FX.sound=!FX.sound;fxUi()});
+  fxUi();
+}
+function fxSize(){var r=$('#stage').getBoundingClientRect();if(!r.width)return;FX.dpr=Math.min(2,window.devicePixelRatio||1);FX.w=Math.round(r.width);FX.h=Math.round(r.height);FX.cv.width=FX.w*FX.dpr;FX.cv.height=FX.h*FX.dpr}
+function fxMode(on){FX.on=on;$('#stage').classList.toggle('strike-on',on);fxUi()}
+function fxUi(){
+  $('#strikeBtn').setAttribute('aria-pressed',FX.on); $('#strikeClear').hidden=!FX.scars.length; $('#strikeSnd').hidden=!FX.on;
+  $('#strikeSnd').textContent='Ton '+(FX.sound?'an':'aus'); $('#strikeSnd').setAttribute('aria-pressed',FX.sound);
+  $('#strikeCount').textContent=FX.count?('Einschläge: '+FX.count):''; $('#strikeBadge').hidden=!FX.on;
+}
+function fxAdd(lat,lon){
+  if(!FX.project)return; var now=performance.now(), parts=[];
+  for(var i=0;i<14;i++)parts.push({a:Math.random()*6.283,sp:14+Math.random()*30,r:2+Math.random()*3});
+  FX.fx.push({lat:lat,lon:lon,t0:now,parts:parts}); FX.scars.push({lat:lat,lon:lon,t0:now,s:0.8+Math.random()*0.5}); FX.count++;
+  if(FX.scars.length>200)FX.scars.shift();
+  fxBoom();
+  if(!reduced){try{$('#stage').animate([{transform:'translate(0,0)'},{transform:'translate(-4px,3px)'},{transform:'translate(3px,-3px)'},{transform:'translate(-2px,2px)'},{transform:'translate(0,0)'}],{duration:380})}catch(e){}}
+  fxUi(); if(!FX.raf)FX.raf=requestAnimationFrame(fxFrame);
+}
+function fxBoom(){
+  if(!FX.sound)return;
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return; if(!FX.ac)FX.ac=new AC(); var ac=FX.ac; if(ac.state==='suspended')ac.resume();
+    var len=Math.floor(ac.sampleRate*1.4), buf=ac.createBuffer(1,len,ac.sampleRate), ch=buf.getChannelData(0);
+    for(var i=0;i<len;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4);
+    var src=ac.createBufferSource(); src.buffer=buf; var lp=ac.createBiquadFilter(); lp.type='lowpass';
+    lp.frequency.setValueAtTime(900,ac.currentTime); lp.frequency.exponentialRampToValueAtTime(70,ac.currentTime+1.2);
+    var g=ac.createGain(); g.gain.value=.5; src.connect(lp); lp.connect(g); g.connect(ac.destination); src.start();
+    var o=ac.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(90,ac.currentTime); o.frequency.exponentialRampToValueAtTime(30,ac.currentTime+.8);
+    var og=ac.createGain(); og.gain.setValueAtTime(.5,ac.currentTime); og.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.9); o.connect(og); og.connect(ac.destination); o.start(); o.stop(ac.currentTime+1);
+  }catch(e){}
+}
+function fxFrame(now){
+  FX.raf=0; var c=FX.ctx, d=FX.dpr; if(!c||!FX.w)return;
+  c.setTransform(d,0,0,d,0,0); c.clearRect(0,0,FX.w,FX.h);
+  if(view!=='karte'||!FX.project)return;
+  FX.scars.forEach(function(sc){
+    var p=FX.project(sc.lat,sc.lon); if(!p||p[0]<-40||p[0]>FX.w+40||p[1]<-40||p[1]>FX.h+40)return;
+    var age=Math.min(1,(now-sc.t0)/1500), R=16*sc.s, g=c.createRadialGradient(p[0],p[1],0,p[0],p[1],R);
+    g.addColorStop(0,'rgba(10,2,0,'+(0.85*age)+')'); g.addColorStop(.55,'rgba(60,15,0,'+(0.5*age)+')'); g.addColorStop(1,'rgba(60,15,0,0)');
+    c.fillStyle=g; c.beginPath(); c.arc(p[0],p[1],R,0,6.283); c.fill();
+    var fl=.5+.5*Math.sin(now/220+sc.lat*40); c.fillStyle='rgba(255,'+Math.round(110+60*fl)+',30,'+(0.55*age)+')'; c.beginPath(); c.arc(p[0],p[1],1.8+fl,0,6.283); c.fill();
+  });
+  var alive=[];
+  FX.fx.forEach(function(e){
+    var t=(now-e.t0)/2400; if(t>=1)return; alive.push(e);
+    var p=FX.project(e.lat,e.lon); if(!p)return; var x=p[0], y=p[1], g;
+    if(t<.14){var fa=1-t/.14; g=c.createRadialGradient(x,y,0,x,y,70); g.addColorStop(0,'rgba(255,250,220,'+fa+')'); g.addColorStop(1,'rgba(255,200,100,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,70,0,6.283); c.fill()}
+    var fb=Math.min(1,t/.35), fr=6+30*(1-Math.pow(1-fb,3)), fa2=t<.45?1:Math.max(0,1-(t-.45)/.45);
+    if(fa2>0){g=c.createRadialGradient(x,y,0,x,y,fr); g.addColorStop(0,'rgba(255,240,190,'+fa2+')'); g.addColorStop(.4,'rgba(255,150,40,'+(0.9*fa2)+')'); g.addColorStop(1,'rgba(200,40,10,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,fr,0,6.283); c.fill()}
+    var sr=8+110*(1-Math.pow(1-Math.min(1,t/.8),2.2)), sa=Math.max(0,1-t/.8);
+    if(sa>0){c.strokeStyle='rgba(255,210,140,'+(0.8*sa)+')'; c.lineWidth=1+3*sa; c.beginPath(); c.arc(x,y,sr,0,6.283); c.stroke()}
+    e.parts.forEach(function(q){var k=Math.min(1,t/.9), dist=q.sp*(1-Math.pow(1-k,2))*1.6, al=Math.max(0,1-t/.9); c.fillStyle='rgba(255,170,60,'+al+')'; c.beginPath(); c.arc(x+Math.cos(q.a)*dist,y+Math.sin(q.a)*dist-18*k*k,q.r*(1-k*.5),0,6.283); c.fill()});
+    if(t>.25){var sm=Math.min(1,(t-.25)/.75); c.fillStyle='rgba(40,40,44,'+(0.35*(1-sm))+')'; for(var i=0;i<5;i++){c.beginPath(); c.arc(x+(i-2)*6,y-12-sm*34-i*4,8+sm*14,0,6.283); c.fill()}}
+  });
+  FX.fx=alive;
+  if(FX.fx.length||FX.scars.length)FX.raf=requestAnimationFrame(fxFrame);
+}
 
 var OFF=(function(){
 var clickPos=null;
@@ -932,6 +1254,7 @@ function draw(sec){
 }
 
 function clickAt(x,y){
+  if(FX.on){var gs=G(x,y);fxAdd(gs[1],gs[0]);return}
   var best=null,bd=1e9; for(var i=0;i<hits.length;i++){var h=hits[i],d=Math.hypot(h.x-x,h.y-y);if(d<h.r&&d<bd){bd=d;best=h}}
   if(!best){sel=null;var gg=G(x,y);clickPos=[gg[1],gg[0]];renderPanel();return}
   clickPos=null;
@@ -1014,7 +1337,8 @@ function liveUpdate(){
 }
 
 function focusPt(lat,lon){flyTo(lon,lat,kMin()*40,1000)}
-return {init:initMap,resize:resizeMap,start:startLoop,stop:stopLoop,focus:focusPt};
+function projPt(lat,lon){return P(lon,lat)}
+return {proj:projPt,init:initMap,resize:resizeMap,start:startLoop,stop:stopLoop,focus:focusPt};
 })();
 var offline=false;
 /* ---------- Weltkarte (live) ---------- */
@@ -1075,7 +1399,7 @@ function gcPts(a,b,n){
 }
 
 function initMap(){
-  if(typeof L==='undefined'){offline=true;$('#basebar').hidden=true;$('#offUI').hidden=false;$('#status').textContent='';OFF.init();return}
+  if(typeof L==='undefined'){offline=true;$('#basebar').hidden=true;$('#offUI').hidden=false;$('#status').textContent='';FX.project=OFF.proj;OFF.init();return}
   map=L.map('lmap',{center:[30,10],zoom:3,minZoom:2,worldCopyJump:true,zoomControl:false,preferCanvas:true});
   L.control.zoom({position:'topright'}).addTo(map);
   map.createPane('labels'); map.getPane('labels').style.zIndex=350; map.getPane('labels').style.pointerEvents='none';
@@ -1092,6 +1416,14 @@ function initMap(){
   LG.cover=L.layerGroup().addTo(map); LG.route=L.layerGroup().addTo(map);
   LG.cam=L.layerGroup().addTo(map); LG.tr=L.layerGroup().addTo(map); LG.fl=L.layerGroup().addTo(map); LG.notes=L.layerGroup().addTo(map);
 
+  FX.project=function(lat,lon){var q=map.latLngToContainerPoint([lat,lon]);return [q.x,q.y]};
+  var cont=map.getContainer(), sd=null;
+  cont.addEventListener('pointerdown',function(e){sd=[e.clientX,e.clientY]},true);
+  cont.addEventListener('click',function(e){
+    if(!FX.on)return; if(e.target.closest&&e.target.closest('.leaflet-control'))return;
+    if(sd&&Math.hypot(e.clientX-sd[0],e.clientY-sd[1])>6)return;
+    e.stopPropagation(); e.preventDefault(); var ll=map.mouseEventToLatLng(e); fxAdd(ll.lat,ll.lng);
+  },true);
   var lay=$('#layers');
   [['cam','Kameras'],['fl','Flugzeuge'],['tr','Nahverkehr']].forEach(function(n){
     var b=el('button','chip',n[1]); b.type='button'; b.dataset.layer=n[0]; b.setAttribute('aria-pressed','true'); lay.appendChild(b);
@@ -1341,7 +1673,7 @@ function updatePanelLive(){
   }
 }
 
-if(sstore('epsa.auth')==='1'){enter()}
+if(!window.claude&&sstore('epsa.auth')==='1'){CL.me={code:CODE,name:'Admin',admin:true};enter()}
 })();
 </script>
 
