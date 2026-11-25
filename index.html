@@ -86,7 +86,7 @@ h1,h2,h3{font-family:var(--font-d);margin:0;text-wrap:balance;letter-spacing:.06
 .logo-sm{height:26px;width:auto}
 .brand b{font:700 20px/1 var(--font-d);letter-spacing:.34em}
 .tabs{display:flex;gap:4px;flex:1 1 auto}
-.tab{background:none;border:0;border-bottom:2px solid transparent;padding:.7em 1em;cursor:pointer;
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:.7em .75em;cursor:pointer;
   font:600 13px/1 var(--font-d);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{color:var(--accent2);border-bottom-color:var(--accent)}
@@ -162,6 +162,28 @@ main{padding-block:22px 48px}
 .badge.strike{left:50%;right:auto;top:auto;bottom:34px;transform:translateX(-50%);border-color:var(--bad);color:var(--bad);z-index:700;text-align:center;width:max-content;max-width:calc(100% - 24px)}
 .strike-on #lmap,.strike-on #lmap .leaflet-grab,.strike-on #offUI canvas{cursor:crosshair!important}
 #strikeBtn[aria-pressed="true"]{border-color:var(--bad);color:var(--bad);background:rgba(255,77,94,.1)}
+
+.tabs{display:flex;flex-wrap:wrap;gap:2px 4px;flex:1 1 auto}
+.cnote.warn{color:var(--warn)}
+.st.s-Geplant{color:var(--accent2)} .st.s-Aktiv{color:var(--warn)} .st.s-Abgeschlossen{color:var(--ok)} .st.s-Gescheitert{color:var(--bad)}
+.st.p-Niedrig{color:var(--dim)} .st.p-Mittel{color:var(--accent2)} .st.p-Hoch{color:var(--warn)} .st.p-Kritisch{color:var(--bad)}
+.meta.burn{color:var(--bad)}
+.sigwrap{border:1px solid var(--line);background:#050b13;position:relative}
+#sigCv{display:block;width:100%;height:300px}
+.sigaxis{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:4px 2px 0}
+.sigfeed{display:grid;gap:8px;max-width:900px}
+.sigmsg{border:1px solid var(--line);background:var(--panel);padding:8px 12px;display:grid;gap:4px;font:500 12px/1.5 var(--font-m);min-width:0}
+.sigmsg .k{color:var(--accent2)} .sigmsg .tx{overflow-wrap:anywhere;color:var(--ink)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start;max-width:1000px}
+.kgrid textarea{min-height:90px}
+#cover{position:fixed;inset:0;z-index:200;background:#fff;color:#222;font:13px/1.4 Arial,Helvetica,sans-serif;overflow:auto;display:grid;grid-template-rows:auto 1fr auto}
+.cv-bar{background:#1d6f42;color:#fff;padding:8px 14px;font-weight:600;cursor:default;user-select:none}
+.cv-wrap{overflow:auto;padding:0}
+#cvTable{border-collapse:collapse;width:100%}
+#cvTable th,#cvTable td{border:1px solid #d0d0d0;padding:4px 10px;text-align:right;white-space:nowrap}
+#cvTable th{background:#f0f0f0;text-align:center;font-weight:600}
+#cvTable td:first-child{text-align:left;background:#f8f8f8}
+.cv-foot{background:#f0f0f0;border-top:1px solid #d0d0d0;padding:4px 14px;color:#555;font-size:12px}
 .ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .ncard{border:1px solid var(--line);background:var(--panel);padding:14px;display:grid;gap:8px;align-content:start;min-width:0}
 .ncard.flash{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn)}
@@ -185,11 +207,11 @@ main{padding-block:22px 48px}
 .pill.ok{border-color:var(--ok);color:var(--ok)} .pill.warn{border-color:var(--warn);color:var(--warn)} .pill.bad{border-color:var(--bad);color:var(--bad)}
 .blocked{position:absolute;inset:0;z-index:600;display:grid;place-items:center;padding:24px;text-align:center;background:rgba(4,7,12,.88);color:var(--ink)}
 .blocked div{max-width:380px}
-.veh{font:700 10px/1 var(--font-m);color:#03111b;padding:3px 5px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(0,0,0,.6)}
-.vehw{width:0;height:0}
+.vh,.cam-w,.pl{display:grid;place-items:center;cursor:pointer;background:none;border:0}
+.veh{font:700 10px/1 var(--font-m);color:#03111b;border-radius:3px;white-space:nowrap;box-shadow:0 0 6px rgba(0,0,0,.6);display:grid;place-items:center;transition:width .2s,height .2s}
+.vh:hover .veh,.cam-w:hover .cam-i{outline:2px solid #fff}
 .cam-i{width:14px;height:14px;box-sizing:border-box;background:#04121c;border:2px solid #3cc8ff;box-shadow:0 0 8px rgba(60,200,255,.7)}
 .cam-i.win{border-color:#8fe6ff;background:#3cc8ff;border-radius:50%}
-.pl{background:none;border:0}
 .leaflet-container{background:#050b13;font-family:var(--font-b)}
 .leaflet-tooltip{background:rgba(8,16,26,.95);border:1px solid var(--accent);color:var(--ink);font:500 12px var(--font-m);box-shadow:none;border-radius:0}
 .leaflet-tooltip-top:before{border-top-color:var(--accent)}
@@ -237,15 +259,19 @@ main{padding-block:22px 48px}
     <div class="brand"><img id="logoSm" class="logo-sm" alt=""><b>EPSA</b></div>
     <nav class="tabs" role="tablist" aria-label="Bereiche">
       <button class="tab" role="tab" id="tab-akten" aria-selected="true" data-view="akten">Akten</button>
+      <button class="tab" role="tab" id="tab-missions" aria-selected="false" data-view="missions">Missionen</button>
       <button class="tab" role="tab" id="tab-karte" aria-selected="false" data-view="karte">Weltkarte</button>
+      <button class="tab" role="tab" id="tab-signals" aria-selected="false" data-view="signals">Signale</button>
       <button class="tab" role="tab" id="tab-notes" aria-selected="false" data-view="notes">Notizen</button>
       <button class="tab" role="tab" id="tab-chat" aria-selected="false" data-view="chat">Chat</button>
+      <button class="tab" role="tab" id="tab-crypto" aria-selected="false" data-view="crypto">Krypto</button>
       <button class="tab" role="tab" id="tab-profiles" aria-selected="false" data-view="profiles" hidden>Profile</button>
       <button class="tab" role="tab" id="tab-browser" aria-selected="false" data-view="browser">Browser</button>
     </nav>
     <div class="right">
       <div class="who" id="who"></div>
       <div class="clock" id="clock" aria-label="Uhrzeit"></div>
+      <button class="btn ghost sm" id="coverBtn" type="button" title="Tarnmodus. Zurück mit zweimal Esc oder Doppelklick auf die Titelleiste.">Tarnen</button>
       <button class="btn ghost sm" id="logout" type="button">Abmelden</button>
     </div>
   </header>
@@ -293,6 +319,71 @@ main{padding-block:22px 48px}
       </div>
     </section>
 
+    <!-- Missionen -->
+    <section id="view-missions" hidden>
+      <div class="bar">
+        <div><div class="lbl">Einsatzplanung</div><h2>Missionen</h2><div class="count" id="mcount"></div></div>
+        <div class="tools"><span class="st" id="lage"></span><button class="btn primary" id="newMis" type="button">Neue Mission</button></div>
+      </div>
+      <div class="chips" id="mchips" role="group" aria-label="Status filtern"></div>
+      <form id="misForm" class="side brk" hidden style="margin-bottom:16px;max-width:720px" autocomplete="off">
+        <div class="lbl" id="mFormLbl">Neue Mission</div>
+        <div class="field"><label class="lbl" for="mName">Codename</label><input id="mName" maxlength="60" required></div>
+        <div class="split">
+          <div class="field" style="flex:1 1 150px"><label class="lbl" for="mStatus">Status</label><select id="mStatus"><option>Geplant</option><option>Aktiv</option><option>Abgeschlossen</option><option>Gescheitert</option></select></div>
+          <div class="field" style="flex:1 1 150px"><label class="lbl" for="mPrio">Priorität</label><select id="mPrio"><option>Niedrig</option><option selected>Mittel</option><option>Hoch</option><option>Kritisch</option></select></div>
+          <div class="field" style="flex:1 1 150px"><label class="lbl" for="mDue">Frist</label><input id="mDue" type="date"></div>
+        </div>
+        <div class="field"><label class="lbl" for="mPlace">Einsatzort</label><input id="mPlace" maxlength="60"></div>
+        <div class="field"><label class="lbl" for="mText">Briefing</label><textarea id="mText" maxlength="3000"></textarea></div>
+        <div class="err" id="mErr" role="alert"></div>
+        <div class="actions"><button class="btn ghost" type="button" id="mCancel">Abbrechen</button><button class="btn primary" type="submit">Mission speichern</button></div>
+      </form>
+      <div class="ngrid" id="mgrid"></div>
+    </section>
+
+    <!-- Signale -->
+    <section id="view-signals" hidden>
+      <div class="bar">
+        <div><div class="lbl">Funkaufklärung · Simulation</div><h2>Signale</h2><div class="count" id="sigInfo"></div></div>
+        <div class="tools"><button class="btn sm" id="sigPause" type="button">Scan anhalten</button><button class="btn sm ghost" id="sigClear" type="button">Verlauf leeren</button></div>
+      </div>
+      <div class="note" style="margin-bottom:12px;max-width:760px">Simulation: Die Signale und Meldungen sind erfunden. Es werden keine echten Funksprüche abgehört.</div>
+      <div class="sigwrap brk"><canvas id="sigCv" aria-label="Simuliertes Funkspektrum mit Wasserfall"></canvas></div>
+      <div class="sigaxis mono"><span>0 MHz</span><span>10</span><span>20</span><span>30 MHz</span></div>
+      <h3 style="margin:20px 0 10px">Abgefangene Meldungen (erfunden)</h3>
+      <div class="sigfeed" id="sigFeed"></div>
+    </section>
+
+    <!-- Krypto -->
+    <section id="view-crypto" hidden>
+      <div class="bar"><div><div class="lbl">Geheimschrift</div><h2>Krypto-Labor</h2></div></div>
+      <div class="kgrid">
+        <div class="side brk">
+          <div class="lbl">Text umwandeln</div>
+          <div class="field"><label class="lbl" for="kAlgo">Verfahren</label>
+            <select id="kAlgo"><option value="caesar">Caesar-Chiffre</option><option value="vigenere">Vigenère-Chiffre</option><option value="atbash">Atbash</option><option value="morse">Morsecode</option><option value="base64">Base64</option><option value="binary">Binärcode</option><option value="aes">AES-256 (echte Verschlüsselung)</option></select></div>
+          <div class="field" id="kKeyWrap"><label class="lbl" for="kKey" id="kKeyLbl">Schlüssel</label><input id="kKey" autocomplete="off"></div>
+          <div class="field"><label class="lbl" for="kIn">Eingabe</label><textarea id="kIn"></textarea></div>
+          <div class="actions" style="justify-content:flex-start"><button class="btn primary sm" id="kEnc" type="button">Verschlüsseln</button><button class="btn sm" id="kDec" type="button">Entschlüsseln</button><button class="btn sm ghost" id="kSwap" type="button">Ergebnis zur Eingabe</button></div>
+          <div class="field"><label class="lbl" for="kOut">Ergebnis</label><textarea id="kOut" readonly></textarea></div>
+          <div class="actions" style="justify-content:flex-start"><button class="btn sm ghost" id="kCopy" type="button">Kopieren</button><button class="btn sm ghost" id="kPlay" type="button" hidden>Morse abspielen</button></div>
+          <div class="err" id="kMsg" role="status"></div>
+          <div class="note">Caesar, Vigenère, Atbash, Morse, Base64 und Binär sind Spielereien und keine echte Sicherheit. Nur AES-256 schützt wirklich, und nur mit einem langen Passwort.</div>
+        </div>
+        <div class="side brk">
+          <div class="lbl">Passwort erzeugen</div>
+          <div class="field"><label class="lbl" for="gLen" id="gLenLbl">Länge: 20</label><input id="gLen" type="range" min="8" max="64" value="20"></div>
+          <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="gSym" checked> Sonderzeichen</label>
+          <button class="btn primary sm" id="gGo" type="button">Erzeugen</button>
+          <div class="field"><label class="lbl" for="gOut">Passwort</label><input id="gOut" readonly></div>
+          <div class="actions" style="justify-content:flex-start"><button class="btn sm ghost" id="gCopy" type="button">Kopieren</button></div>
+          <div class="err" id="gMsg" role="status"></div>
+          <div class="note">Das Passwort wird in deinem Browser mit dem Zufallsgenerator des Systems erzeugt und nirgends gespeichert.</div>
+        </div>
+      </div>
+    </section>
+
     <!-- Chat -->
     <section id="view-chat" hidden>
       <div class="bar"><div><div class="lbl">Interner Kanal für alle Profile</div><h2>Chat</h2><div class="count" id="chatInfo"></div></div></div>
@@ -309,6 +400,7 @@ main{padding-block:22px 48px}
     <!-- Profile -->
     <section id="view-profiles" hidden>
       <div class="bar"><div><div class="lbl">Nur für den Admin</div><h2>Profile</h2><div class="count" id="profCount"></div></div></div>
+      <div class="note" id="profInfo" hidden style="margin-bottom:14px;max-width:620px"></div>
       <form id="profForm" class="side brk" style="max-width:560px;margin-bottom:18px" autocomplete="off">
         <div class="lbl">Neues Profil anlegen</div>
         <div class="field"><label class="lbl" for="pName">Name</label><input id="pName" maxlength="40" required></div>
@@ -334,6 +426,7 @@ main{padding-block:22px 48px}
         <div class="lbl" id="nFormLbl">Neue Notiz</div>
         <div class="field"><label class="lbl" for="nTitle">Titel</label><input id="nTitle" required maxlength="80"></div>
         <div class="field"><label class="lbl" for="nCat">Kategorie</label><select id="nCat"><option>Allgemein</option><option>Person</option><option>Ort</option><option>Ereignis</option><option>Aufgabe</option></select></div>
+        <div class="field"><label class="lbl" for="nBurn">Selbstzerstörung</label><select id="nBurn"><option value="none">Keine</option><option value="60">Nach 1 Minute</option><option value="600">Nach 10 Minuten</option><option value="3600">Nach 1 Stunde</option><option value="86400">Nach 24 Stunden</option><option value="keep" hidden>Unverändert</option></select></div>
         <div class="field"><label class="lbl" for="nText">Inhalt</label><textarea id="nText" maxlength="5000"></textarea></div>
         <div class="split">
           <div class="field" style="flex:1 1 150px"><label class="lbl" for="nLat">Breitengrad (optional)</label><input id="nLat" inputmode="decimal" placeholder="52.520"></div>
@@ -371,6 +464,12 @@ main{padding-block:22px 48px}
       </div>
     </section>
   </main>
+</div>
+
+<div id="cover" hidden aria-hidden="true">
+  <div class="cv-bar" id="cvBar">Budget_2026_Entwurf.xlsx</div>
+  <div class="cv-wrap"><table id="cvTable"></table></div>
+  <div class="cv-foot">Tabelle1 · Bereit</div>
 </div>
 
 <!-- Akte anlegen / bearbeiten -->
@@ -418,7 +517,7 @@ $('#logoBig').src=LOGO; $('#logoSm').src=LOGO;
 /* ---------- Login ---------- */
 
 /* ---------- Server-Speicher (gemeinsam, pro Profil verschlüsselt) ---------- */
-var CL={on:false,db:null,usr:null,me:null,key:null,unsubs:[],canAdmin:false,seq:{akten:0,notes:0},last:{akten:{},notes:{}},busy:{akten:false,notes:false},again:{akten:false,notes:false},chatFirst:true,ready:null};
+var CL={on:false,db:null,usr:null,me:null,key:null,unsubs:[],canAdmin:false,seq:{akten:0,notes:0,missions:0},last:{akten:{},notes:{},missions:{}},busy:{akten:false,notes:false,missions:false},again:{akten:false,notes:false,missions:false},why:"",adminKnown:false,chatFirst:true,ready:null};
 var CODE='31492', PASS='1324', ADMIN_SALT='EPSA-ADMIN-SALT-v1';
 function b64(buf){var u=new Uint8Array(buf),t='';for(var i=0;i<u.length;i+=8192)t+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(t)}
 function unb64(t){var r=atob(t),u=new Uint8Array(r.length);for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u}
@@ -437,23 +536,77 @@ function dec(key,d){
 }
 function withTimeout(p,ms){return Promise.race([p,new Promise(function(_,rej){setTimeout(function(){rej({code:'timeout'})},ms)})])}
 function writeErr(e){
-  var c=e&&e.code;
-  if(c==='invalid_argument')return 'Speichern nicht erlaubt. Dein Zugang zur Seite braucht Mitwirken-Rechte (für Profile: Bearbeiten-Rechte).';
-  if(c==='quota_exceeded')return 'Der Speicher dieser Seite ist voll.';
-  if(c==='timeout'||c==='unavailable')return 'Server nicht erreichbar. Bitte später erneut versuchen.';
-  if(c==='revoked')return 'Dein Zugriff auf diese Seite wurde entzogen.';
-  return 'Speichern fehlgeschlagen.';
+  var c=e&&e.code, det=' ['+(c||'unbekannt')+(e&&e.message?': '+String(e.message).slice(0,100):'')+']';
+  if(c==='invalid_argument')return 'Speichern nicht erlaubt. Dein Zugang zur Seite braucht Mitwirken-Rechte (für Profile: Bearbeiten-Rechte).'+det;
+  if(c==='quota_exceeded')return 'Der Speicher dieser Seite ist voll.'+det;
+  if(c==='timeout'||c==='unavailable')return 'Server nicht erreichbar. Bitte später erneut versuchen.'+det;
+  if(c==='revoked')return 'Dein Zugriff auf diese Seite wurde entzogen.'+det;
+  return 'Speichern fehlgeschlagen.'+det;
 }
 function setBanner(t){var b=$('#cbanner');b.textContent=t||'';b.hidden=!t}
-function cloudNote(){var n=$('#cloudNote');n.textContent=CL.on?'Server-Speicher aktiv. Deine Daten sind mit deinem Passwort verschlüsselt.':'Lokaler Modus. Daten bleiben in diesem Browser.';n.className='cnote'+(CL.on?' on':'')}
-CL.ready=(function(){
-  if(!(window.claude&&window.claude.use&&window.crypto&&crypto.subtle))return Promise.resolve();
-  return Promise.all([claude.use('db'),claude.use('user')]).then(function(r){CL.db=r[0];CL.usr=r[1];CL.on=!!CL.db}).catch(function(){});
-})().then(cloudNote);
+function cloudNote(){
+  var n=$('#cloudNote'); n.textContent='';
+  if(CL.on){n.textContent='Server-Speicher aktiv. Deine Daten sind mit deinem Passwort verschlüsselt.';n.className='cnote on';return}
+  n.className='cnote'+(window.claude?' warn':'');
+  n.appendChild(document.createTextNode(CL.why||'Lokaler Modus. Daten und Profile bleiben in diesem Browser.'));
+  if(window.claude){var rb=el('button','btn sm ghost','Erneut prüfen');rb.type='button';rb.style.marginTop='8px';rb.addEventListener('click',function(){rb.disabled=true;CL.ready=initCloud().then(cloudNote)});n.appendChild(document.createElement('br'));n.appendChild(rb)}
+}
+function initCloud(){
+  CL.why='';
+  if(!window.claude||!window.claude.use){CL.why='Lokaler Modus. Es gibt keinen Server-Speicher, weil die Seite nicht im Claude-Fenster läuft (Datei oder eigener Browser-Tab). Öffne sie direkt in Claude.';return Promise.resolve()}
+  if(!(window.crypto&&crypto.subtle)){CL.why='Lokaler Modus. Dieser Rahmen bietet keine Verschlüsselung (WebCrypto). Server-Speicher ist deshalb aus.';return Promise.resolve()}
+  return Promise.all([claude.use('db'),claude.use('user')]).then(function(r){
+    CL.db=r[0];CL.usr=r[1];CL.on=!!CL.db;
+    if(!CL.on)CL.why='Lokaler Modus. Claude stellt in dieser Ansicht keinen Server-Speicher bereit. Melde dich bei Claude an und öffne die Seite direkt in Claude.';
+  }).catch(function(e){CL.why='Lokaler Modus. Server-Speicher nicht erreichbar ['+((e&&e.code)||'Fehler')+'].'});
+}
+CL.ready=initCloud().then(cloudNote);
+function K(base){return base+((CL.me&&!CL.me.admin)?'.'+CL.me.code:'')}
+function listOf(kind){return kind==='akten'?recs:(kind==='notes'?notes:missions)}
+/* lokale Profile (ohne Server) */
+function fnv(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16)}
+function rnd(){var a=new Uint8Array(12);if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(a);else for(var i=0;i<12;i++)a[i]=Math.floor(Math.random()*256);return b64(a)}
+function lhash(code,pw,salt){
+  var t=salt+'|'+code+':'+pw;
+  if(window.crypto&&crypto.subtle&&crypto.subtle.digest)return crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)).then(function(b){return 'S'+b64(b)});
+  return Promise.resolve('F'+fnv(t)+fnv(t.split('').reverse().join('')));
+}
+function localProfiles(){try{var o=JSON.parse(store('epsa.profiles.v1')||'{}');return (o&&typeof o==='object')?o:{}}catch(e){return {}}}
+function saveLocalProfiles(o){return store('epsa.profiles.v1',JSON.stringify(o))}
+function createLocalProfile(name,code,pw,err){
+  var all=localProfiles(); if(all[code]){err.textContent='Diesen Code gibt es schon.';return}
+  var salt=rnd();
+  lhash(code,pw,salt).then(function(h){
+    all[code]={name:name.slice(0,40),salt:salt,h:h,created:Date.now()};
+    if(!saveLocalProfiles(all)){err.textContent='Dieser Browser lässt kein Speichern zu.';return}
+    $('#profForm').reset(); err.style.color='var(--ok)'; err.textContent='Lokales Profil „'+name+'“ angelegt. Es gilt nur in diesem Browser.'; renderLocalProfiles();
+  });
+}
+function renderLocalProfiles(){
+  var l=$('#profList'); l.textContent=''; var all=localProfiles(), codes=Object.keys(all);
+  $('#profCount').textContent=codes.length+' lokale Profile';
+  if(!codes.length){l.appendChild(el('div','empty','Noch keine Profile. Lege oben das erste an.'));return}
+  codes.forEach(function(code){
+    var x=all[code], c=el('div','ncard'); c.appendChild(el('h3',null,String(x.name||code)));
+    var m=el('div','meta','Zugangscode '+code+'\nnur in diesem Browser'); m.style.whiteSpace='pre-line'; c.appendChild(m);
+    var del=el('button','btn sm danger','Profil löschen'); del.type='button'; var armed=false;
+    del.addEventListener('click',function(){
+      if(!armed){armed=true;del.textContent='Wirklich löschen? Alle Daten gehen verloren.';return}
+      delete all[code]; saveLocalProfiles(all);
+      ['epsa.akten.v1','epsa.notes.v1','epsa.missions.v1'].forEach(function(b){try{localStorage.removeItem(b+'.'+code)}catch(e){}});
+      renderLocalProfiles();
+    });
+    c.appendChild(del); l.appendChild(c);
+  });
+}
 
 function tryLogin(c,p){
   var isAdmin=(c===CODE&&p===PASS);
-  if(!CL.on)return Promise.resolve(isAdmin?{ok:true,me:{code:c,name:'Admin',admin:true}}:{});
+  if(!CL.on){
+    if(isAdmin)return Promise.resolve({ok:true,me:{code:c,name:'Admin',admin:true}});
+    var lp=localProfiles()[c]; if(!lp)return Promise.resolve({});
+    return lhash(c,p,lp.salt).then(function(h){return h===lp.h?{ok:true,me:{code:c,name:String(lp.name||c),admin:false}}:{}});
+  }
   if(isAdmin)return deriveKey(c,p,new TextEncoder().encode(ADMIN_SALT)).then(function(k){return {ok:true,key:k,me:{code:c,name:'Admin',admin:true}}});
   if(!/^[A-Za-z0-9_-]{3,20}$/.test(c))return Promise.resolve({});
   return withTimeout(CL.db.doc('profiles/'+c).get(),10000).then(function(snap){
@@ -488,7 +641,7 @@ function cloudSync(kind){
   var coll=CL.db.doc('userdata/'+CL.me.code).collection(kind), key=CL.key;
   (function run(){
     CL.again[kind]=false;
-    var list=(kind==='akten'?recs:notes).slice(), last=CL.last[kind], ids={}, jobs=[];
+    var list=listOf(kind).slice(), last=CL.last[kind], ids={}, jobs=[];
     list.forEach(function(r){ids[r.id]=1;var j=JSON.stringify(r);if(last[r.id]!==j)jobs.push(function(){return enc(key,r).then(function(e){return coll.doc(r.id).set(e)}).then(function(){last[r.id]=j})})});
     Object.keys(last).forEach(function(id){if(!ids[id])jobs.push(function(){return coll.doc(id).delete().then(function(){delete last[id]})})});
     var p=Promise.resolve(); jobs.forEach(function(j){p=p.then(j)});
@@ -497,26 +650,28 @@ function cloudSync(kind){
 }
 function startData(){
   applyRole();
-  if(!CL.on){loadRecs();loadNotes();renderRecs();renderNotes();pinNotes();return}
-  recs=[];notes=[];renderRecs();renderNotes();pinNotes();
-  CL.last={akten:{},notes:{}}; CL.chatFirst=true;
+  if(!CL.on){loadRecs();loadNotes();loadMissions();renderRecs();renderNotes();renderMissions();pinNotes();if(CL.me&&CL.me.admin)renderLocalProfiles();return}
+  recs=[];notes=[];missions=[];renderRecs();renderNotes();renderMissions();pinNotes();
+  CL.last={akten:{},notes:{},missions:{}}; CL.chatFirst=true;
   subColl('akten',function(a){recs=a;renderRecs()});
   subColl('notes',function(a){notes=a;renderNotes();pinNotes()});
+  subColl('missions',function(a){missions=a;renderMissions()});
   startChat();
+  if(CL.me.admin)startProfiles();
   if(CL.usr){
     CL.usr.can('data.write').then(function(v){if(v===false)setBanner('Du hast nur Leserechte. Der Besitzer muss dir Mitwirken-Rechte geben, damit du speichern und chatten kannst.')});
-    CL.usr.canEdit().then(function(v){CL.canAdmin=!!v;applyRole();if(v&&CL.me&&CL.me.admin)startProfiles()});
+    CL.usr.canEdit().then(function(v){CL.canAdmin=!!v;CL.adminKnown=true;applyRole()});
   }
 }
 function stopData(){
-  CL.unsubs.forEach(function(u){try{u()}catch(e){}}); CL.unsubs=[]; CL.seq.akten++;CL.seq.notes++;
-  CL.me=null;CL.key=null;CL.canAdmin=false;recs=[];notes=[];setBanner('');
+  CL.unsubs.forEach(function(u){try{u()}catch(e){}}); CL.unsubs=[]; CL.seq.akten++;CL.seq.notes++;CL.seq.missions++;CL.adminKnown=false;
+  CL.me=null;CL.key=null;CL.canAdmin=false;recs=[];notes=[];missions=[];setBanner('');memFallback=null;nMem=null;mMem=null;
   $('#msgs').textContent='';$('#profList').textContent='';
 }
 function applyRole(){
   var me=CL.me;
   $('#who').textContent=me?(me.name+' · '+(CL.on?'Server':'lokal')):'';
-  $('#tab-profiles').hidden=!(CL.on&&me&&me.admin&&CL.canAdmin);
+  $('#tab-profiles').hidden=!(me&&me.admin);
   $('#bkLocal').hidden=!CL.on;
 }
 
@@ -589,7 +744,7 @@ $('#profForm').addEventListener('submit',function(ev){
   if(!/^[A-Za-z0-9_-]{3,20}$/.test(code)){err.textContent='Der Code braucht 3 bis 20 Zeichen: Ziffern, Buchstaben, - oder _.';return}
   if(code===CODE){err.textContent='Dieser Code ist für den Admin reserviert.';return}
   if(pw.length<4){err.textContent='Das Passwort braucht mindestens 4 Zeichen.';return}
-  if(!CL.on){err.textContent='Profile gibt es nur mit Server-Speicher.';return}
+  if(!CL.on){createLocalProfile(name,code,pw,err);return}
   var salt=crypto.getRandomValues(new Uint8Array(16));
   CL.db.doc('profiles/'+code).get().then(function(ex){
     if(ex.exists){err.textContent='Diesen Code gibt es schon.';return}
@@ -599,11 +754,12 @@ $('#profForm').addEventListener('submit',function(ev){
   }).catch(function(e){err.textContent=writeErr(e)});
 });
 $('#bkLocal').addEventListener('click',function(){
-  var a=null,n=null; try{a=JSON.parse(store(KEY)||'null');n=JSON.parse(store(NKEY)||'null')}catch(e){}
-  var na=0,nn=0;
+  var a=null,n=null,m=null; try{a=JSON.parse(store(KEY)||'null');n=JSON.parse(store(NKEY)||'null');m=JSON.parse(store(MKEY)||'null')}catch(e){}
+  var na=0,nn=0,nm=0;
   (Array.isArray(a)?a:[]).forEach(function(r){if(r&&typeof r.id==='string'&&!recs.some(function(x){return x.id===r.id})){recs.push(r);na++}});
   (Array.isArray(n)?n:[]).forEach(function(r){if(r&&typeof r.id==='string'&&!notes.some(function(x){return x.id===r.id})){notes.push(r);nn++}});
-  saveRecs();saveNotes();renderRecs();renderNotes();bkMsg(na+' Akten und '+nn+' Notizen aus diesem Browser übernommen.');
+  (Array.isArray(m)?m:[]).forEach(function(r){if(r&&typeof r.id==='string'&&!missions.some(function(x){return x.id===r.id})){missions.push(r);nm++}});
+  saveRecs();saveNotes();saveMissions();renderRecs();renderNotes();renderMissions();bkMsg(na+' Akten, '+nn+' Notizen und '+nm+' Missionen aus diesem Browser übernommen.');
 });
 var gate=$('#gate');
 gate.addEventListener('submit',function(ev){
@@ -614,7 +770,7 @@ gate.addEventListener('submit',function(ev){
     btn.disabled=false;
     if(res&&res.ok){
       $('#err').textContent=''; CL.me=res.me; CL.key=res.key||null;
-      if(!CL.on)sstore('epsa.auth','1');
+      if(!CL.on)sstore('epsa.auth',JSON.stringify(res.me));
       bootSequence();
     }else{
       $('#err').textContent=(res&&res.err)||'Zugang verweigert. Code oder Passwort ist falsch.';
@@ -638,12 +794,12 @@ function bootSequence(){
 var entered=false;
 function enter(){
   $('#login').hidden=true; $('#app').hidden=false;
-  if(!entered){entered=true; initRecords(); initMap(); fxInit(); tick(); setInterval(tick,1000)}
+  if(!entered){entered=true; initRecords(); initMap(); fxInit(); tick(); setInterval(tick,1000); setInterval(burnTick,1000)}
   startData();
   showView('akten'); window.scrollTo(0,0);
 }
 $('#logout').addEventListener('click',function(){
-  sstore('epsa.auth',null); stopData(); renderRecs(); renderNotes(); pinNotes(); fxMode(false); $('#app').hidden=true; $('#login').hidden=false; $('#code').value=''; $('#pw').value='';
+  sigStop(); sstore('epsa.auth',null); stopData(); renderRecs(); renderNotes(); pinNotes(); fxMode(false); $('#app').hidden=true; $('#login').hidden=false; $('#code').value=''; $('#pw').value='';
   stopLoop(); window.scrollTo(0,0); $('#code').focus();
 });
 function tick(){
@@ -659,13 +815,20 @@ function tick(){
 var view='akten';
 function showView(v){
   view=v;
-  ['akten','karte','notes','chat','profiles','browser'].forEach(function(n){
+  ['akten','missions','karte','signals','notes','chat','crypto','profiles','browser'].forEach(function(n){
     $('#view-'+n).hidden=v!==n; $('#tab-'+n).setAttribute('aria-selected',v===n);
   });
   if(v==='karte'){resizeMap(); startLoop()} else stopLoop();
   if(v==='browser')$('#ddgQ').focus();
   if(v==='chat'){$('#chatOff').hidden=CL.on;$('#chatBox').hidden=!CL.on;if(CL.on){var mb=$('#msgs');mb.scrollTop=mb.scrollHeight;CL.chatFirst=false;$('#chatIn').focus()}}
   if(v==='karte'&&FX.scars.length&&!FX.raf)FX.raf=requestAnimationFrame(fxFrame);
+  if(v==='signals')sigStart(); else sigStop();
+  if(v==='profiles'){
+    var pi=$('#profInfo');
+    if(!CL.on){pi.hidden=false;pi.textContent=(CL.why||'Lokaler Modus.')+' Profile, die du hier anlegst, gelten nur in diesem Browser.';renderLocalProfiles()}
+    else if(CL.adminKnown&&!CL.canAdmin){pi.hidden=false;pi.textContent='Dein Claude-Konto hat keine Bearbeiten-Rechte auf dieser Seite. Ohne sie kann sie keine Profile auf dem Server anlegen. Öffne die Seite mit dem Eigentümer-Konto.'}
+    else pi.hidden=true;
+  }
 }
 /* Browser-Reiter: DuckDuckGo erlaubt kein Einbetten, die Suche öffnet in einem neuen Tab */
 (function(){
@@ -688,7 +851,7 @@ function avatar(h){
 function hue(str){var n=0;for(var i=0;i<str.length;i++)n=(n*31+str.charCodeAt(i))%360;return n}
 function pad(n){return ('0000'+n).slice(-4)}
 function loadRecs(){
-  var raw=store(KEY), arr=null;
+  var raw=store(K(KEY)), arr=null;
   if(raw){try{arr=JSON.parse(raw)}catch(e){arr=null}}
   if(!arr&&memFallback)arr=memFallback;
   if(!Array.isArray(arr))arr=[];
@@ -697,7 +860,7 @@ function loadRecs(){
 function saveRecs(){
   if(CL.on){cloudSync('akten');return}
   memFallback=recs;
-  var ok=store(KEY,JSON.stringify(recs));
+  var ok=store(K(KEY),JSON.stringify(recs));
   if(!ok){ $('#count').textContent='Speichern im Browser nicht möglich. Akten gehen beim Schließen verloren.' ; }
 }
 function initRecords(){
@@ -804,10 +967,10 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeOv('fo
 /* ---------- Notizen ---------- */
 var NKEY='epsa.notes.v1', notes=[], nMem=null, nEdit=null, nQuery='', clickPosLive=null;
 function loadNotes(){
-  var raw=store(NKEY), arr=null; if(raw){try{arr=JSON.parse(raw)}catch(e){arr=null}}
+  var raw=store(K(NKEY)), arr=null; if(raw){try{arr=JSON.parse(raw)}catch(e){arr=null}}
   if(!arr&&nMem)arr=nMem; if(!Array.isArray(arr))arr=[]; notes=arr;
 }
-function saveNotes(){if(CL.on){cloudSync('notes');pinNotes();return}nMem=notes; if(!store(NKEY,JSON.stringify(notes)))$('#ncount').textContent='Speichern im Browser nicht möglich. Notizen gehen beim Schließen verloren.'; pinNotes()}
+function saveNotes(){if(CL.on){cloudSync('notes');pinNotes();return}nMem=notes; if(!store(K(NKEY),JSON.stringify(notes)))$('#ncount').textContent='Speichern im Browser nicht möglich. Notizen gehen beim Schließen verloren.'; pinNotes()}
 function hasPos(n){return isFinite(parseFloat(n.lat))&&isFinite(parseFloat(n.lon))&&n.lat!==''&&n.lon!==''&&n.lat!=null&&n.lon!=null}
 function pinNotes(){
   if(typeof LG==='undefined'||!LG.notes)return; LG.notes.clearLayers();
@@ -826,6 +989,7 @@ function renderNotes(){
     c.appendChild(el('span','st s-Neutral',n.cat)); c.firstChild.style.justifySelf='start';
     c.appendChild(el('h3',null,n.title)); if(n.text)c.appendChild(el('div','txt',n.text));
     var meta=el('div','meta',new Date(n.t).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'})+(hasPos(n)?'\n'+fmtLat(parseFloat(n.lat))+' '+fmtLon(parseFloat(n.lon)):'')); meta.style.whiteSpace='pre-line'; c.appendChild(meta);
+    if(n.burnAt){var bn=el('div','meta burn',burnText(n.burnAt));bn.dataset.burn=n.burnAt;c.appendChild(bn)}
     var a=el('div','acts');
     if(hasPos(n)){var mb=el('button','btn sm ghost','Auf Karte');mb.type='button';mb.addEventListener('click',function(){showOnMap(parseFloat(n.lat),parseFloat(n.lon))});a.appendChild(mb)}
     var eb=el('button','btn sm ghost','Bearbeiten');eb.type='button';eb.addEventListener('click',function(){openNoteForm(n.id)});a.appendChild(eb);
@@ -839,6 +1003,7 @@ function openNoteForm(id,pre){
   $('#nFormLbl').textContent=n?'Notiz bearbeiten':'Neue Notiz';
   $('#nTitle').value=n?n.title:''; $('#nCat').value=n?n.cat:(pre.lat!=null?'Ort':'Allgemein'); $('#nText').value=n?n.text:'';
   $('#nLat').value=n?(n.lat==null?'':n.lat):(pre.lat!=null?pre.lat.toFixed(5):''); $('#nLon').value=n?(n.lon==null?'':n.lon):(pre.lon!=null?pre.lon.toFixed(5):'');
+  $('#nBurn').querySelector('option[value=keep]').hidden=!(n&&n.burnAt); $('#nBurn').value=(n&&n.burnAt)?'keep':'none';
   $('#nErr').textContent=''; $('#noteForm').hidden=false; $('#nTitle').focus();
 }
 $('#newNote').addEventListener('click',function(){openNoteForm(null)});
@@ -851,7 +1016,9 @@ $('#noteForm').addEventListener('submit',function(ev){
     lat=parseFloat(la); lon=parseFloat(lo);
     if(!isFinite(lat)||!isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){$('#nErr').textContent='Breite muss zwischen -90 und 90 liegen, Länge zwischen -180 und 180. Oder beide Felder leer lassen.';return}
   }
-  var d={title:title,cat:$('#nCat').value,text:$('#nText').value.trim(),lat:lat,lon:lon};
+  var bsel=$('#nBurn').value, burnAt=null;
+  if(bsel==='keep'){var en=notes.find(function(x){return x.id===nEdit});burnAt=(en&&en.burnAt)||null}else if(bsel!=='none'){burnAt=Date.now()+parseInt(bsel,10)*1000}
+  var d={title:title,cat:$('#nCat').value,text:$('#nText').value.trim(),lat:lat,lon:lon,burnAt:burnAt};
   if(nEdit){var n=notes.find(function(x){return x.id===nEdit});Object.keys(d).forEach(function(k){n[k]=d[k]})}
   else{d.id='N'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36);d.t=Date.now();notes.unshift(d)}
   saveNotes(); $('#noteForm').hidden=true; renderNotes();
@@ -866,7 +1033,7 @@ function showOnMap(lat,lon){showView('karte');setTimeout(function(){if(offline)O
 /* Sicherung */
 function bkMsg(t,bad){var m=$('#bkMsg');m.textContent=t;m.style.color=bad?'var(--bad)':'var(--ok)'}
 $('#bkMake').addEventListener('click',function(){
-  var j=JSON.stringify({epsa:1,akten:recs,notizen:notes}); var t=$('#bk'); t.value=j; t.focus(); t.select();
+  var j=JSON.stringify({epsa:1,akten:recs,notizen:notes,missionen:missions}); var t=$('#bk'); t.value=j; t.focus(); t.select();
   var done=function(){bkMsg('Sicherung erstellt. Kopiere den Text und bewahre ihn sicher auf.')};
   try{navigator.clipboard.writeText(j).then(function(){bkMsg('Sicherung erstellt und in die Zwischenablage kopiert.')},done)}catch(e){done()}
 });
@@ -884,7 +1051,253 @@ $('#bkLoad').addEventListener('click',function(){
     var rec={id:r.id.replace(/[^A-Za-z0-9_.~:@+-]/g,'_').slice(0,40),title:r.title.slice(0,80),cat:['Allgemein','Person','Ort','Ereignis','Aufgabe'].indexOf(r.cat)>=0?r.cat:'Allgemein',text:String(r.text||'').slice(0,5000),lat:isFinite(parseFloat(r.lat))?parseFloat(r.lat):null,lon:isFinite(parseFloat(r.lon))?parseFloat(r.lon):null,t:isFinite(r.t)?r.t:Date.now()};
     var i=notes.findIndex(function(x){return x.id===rec.id}); if(i>=0)notes[i]=rec; else notes.push(rec); nn++;
   });
-  saveRecs(); saveNotes(); renderRecs(); renderNotes(); bkMsg(na+' Akten und '+nn+' Notizen eingelesen.');
+  var nmi=0;
+  (Array.isArray(d.missionen)?d.missionen:[]).forEach(function(r){
+    if(!r||typeof r.id!=='string'||typeof r.name!=='string')return;
+    var rec={id:r.id.replace(/[^A-Za-z0-9_.~:@+-]/g,'_').slice(0,40),name:r.name.slice(0,60),status:MST.indexOf(r.status)>=0?r.status:'Geplant',prio:MPR.indexOf(r.prio)>=0?r.prio:'Mittel',due:/^\d{4}-\d{2}-\d{2}$/.test(r.due||'')?r.due:'',place:String(r.place||'').slice(0,60),text:String(r.text||'').slice(0,3000),t:isFinite(r.t)?r.t:Date.now()};
+    var i=missions.findIndex(function(x){return x.id===rec.id}); if(i>=0)missions[i]=rec; else missions.push(rec); nmi++;
+  });
+  saveRecs(); saveNotes(); saveMissions(); renderRecs(); renderNotes(); renderMissions(); bkMsg(na+' Akten, '+nn+' Notizen und '+nmi+' Missionen eingelesen.');
+});
+
+
+/* ---------- Missionen ---------- */
+var MKEY='epsa.missions.v1', missions=[], mMem=null, mEdit=null, mFilter='Alle';
+var MST=['Geplant','Aktiv','Abgeschlossen','Gescheitert'], MPR=['Niedrig','Mittel','Hoch','Kritisch'];
+function loadMissions(){var raw=store(K(MKEY)),a=null;if(raw){try{a=JSON.parse(raw)}catch(e){a=null}}if(!Array.isArray(a))a=mMem||[];missions=a}
+function saveMissions(){if(CL.on){cloudSync('missions');return}mMem=missions;store(K(MKEY),JSON.stringify(missions))}
+function dueDate(m){return m.due?new Date(m.due+'T23:59:59'):null}
+function dueText(m){
+  var d=dueDate(m); if(!d)return '';
+  var open=m.status==='Geplant'||m.status==='Aktiv', days=Math.ceil((d-Date.now())/864e5), base='Frist '+d.toLocaleDateString('de-DE');
+  if(!open)return base;
+  if(days<0)return base+' · überfällig seit '+(-days)+(days===-1?' Tag':' Tagen');
+  if(days===0)return base+' · heute';
+  return base+' · noch '+days+(days===1?' Tag':' Tage');
+}
+function lage(){
+  var now=Date.now(), act=missions.filter(function(m){return m.status==='Aktiv'});
+  var late=missions.some(function(m){var d=dueDate(m);return (m.status==='Geplant'||m.status==='Aktiv')&&d&&d<now});
+  if(late||act.some(function(m){return m.prio==='Kritisch'}))return ['Rot','s-Gesperrt'];
+  if(act.some(function(m){return m.prio==='Hoch'}))return ['Gelb','s-Beobachtet'];
+  return ['Grün','s-Verbündet'];
+}
+function renderMissions(){
+  var ch=$('#mchips'); ch.textContent='';
+  ['Alle'].concat(MST).forEach(function(st){
+    var n=st==='Alle'?missions.length:missions.filter(function(m){return m.status===st}).length;
+    var b=el('button','chip',st+' · '+n); b.type='button'; b.setAttribute('aria-pressed',mFilter===st); b.addEventListener('click',function(){mFilter=st;renderMissions()}); ch.appendChild(b);
+  });
+  var L=lage(), lg=$('#lage'); lg.textContent='Lage: '+L[0]; lg.className='st '+L[1];
+  var list=missions.filter(function(m){return mFilter==='Alle'||m.status===mFilter}).sort(function(a,b){return MPR.indexOf(b.prio)-MPR.indexOf(a.prio)||((b.t||0)-(a.t||0))});
+  $('#mcount').textContent=list.length+' von '+missions.length+' Missionen';
+  var g=$('#mgrid'); g.textContent='';
+  if(!list.length){g.appendChild(el('div','empty',missions.length?'Keine Mission in diesem Status.':'Noch keine Missionen. Mit „Neue Mission“ planst du die erste.'));return}
+  list.forEach(function(m){
+    var c=el('div','ncard'), tags=el('div','acts');
+    tags.appendChild(el('span','st s-'+m.status,m.status)); tags.appendChild(el('span','st p-'+m.prio,m.prio)); c.appendChild(tags);
+    c.appendChild(el('h3',null,m.name)); if(m.place)c.appendChild(el('div','meta','Ort: '+m.place)); if(m.text)c.appendChild(el('div','txt',m.text));
+    var dt=dueText(m); if(dt)c.appendChild(el('div','meta',dt));
+    var a=el('div','acts'), idx=MST.indexOf(m.status);
+    if(idx===0||idx===1){var nb=el('button','btn sm',idx===0?'Starten':'Abschließen');nb.type='button';nb.addEventListener('click',function(){m.status=MST[idx+1];saveMissions();renderMissions()});a.appendChild(nb)}
+    var eb=el('button','btn sm ghost','Bearbeiten');eb.type='button';eb.addEventListener('click',function(){openMis(m.id)});a.appendChild(eb);
+    var db=el('button','btn sm danger','Löschen');db.type='button';var armed=false;
+    db.addEventListener('click',function(){if(!armed){armed=true;db.textContent='Wirklich löschen?';return}missions=missions.filter(function(x){return x.id!==m.id});saveMissions();renderMissions()});
+    a.appendChild(db); c.appendChild(a); g.appendChild(c);
+  });
+}
+function openMis(id){
+  mEdit=id||null; var m=id?missions.find(function(x){return x.id===id}):null;
+  $('#mFormLbl').textContent=m?'Mission bearbeiten':'Neue Mission';
+  $('#mName').value=m?m.name:''; $('#mStatus').value=m?m.status:'Geplant'; $('#mPrio').value=m?m.prio:'Mittel'; $('#mDue').value=m?(m.due||''):''; $('#mPlace').value=m?(m.place||''):''; $('#mText').value=m?(m.text||''):'';
+  $('#mErr').textContent=''; $('#misForm').hidden=false; $('#mName').focus();
+}
+$('#newMis').addEventListener('click',function(){openMis(null)});
+$('#mCancel').addEventListener('click',function(){$('#misForm').hidden=true});
+$('#misForm').addEventListener('submit',function(ev){
+  ev.preventDefault(); var name=$('#mName').value.trim(); if(!name){$('#mErr').textContent='Bitte einen Codenamen eintragen.';return}
+  var d={name:name.slice(0,60),status:$('#mStatus').value,prio:$('#mPrio').value,due:$('#mDue').value||'',place:$('#mPlace').value.trim().slice(0,60),text:$('#mText').value.trim().slice(0,3000)};
+  if(mEdit){var m=missions.find(function(x){return x.id===mEdit});Object.keys(d).forEach(function(k){m[k]=d[k]})}
+  else{d.id='M'+Date.now().toString(36)+Math.floor(Math.random()*1e3).toString(36);d.t=Date.now();missions.unshift(d)}
+  saveMissions(); $('#misForm').hidden=true; renderMissions();
+});
+
+/* ---------- Selbstzerstörung ---------- */
+function burnText(ts){
+  var ms=ts-Date.now(); if(ms<=0)return 'Selbstzerstörung läuft …';
+  var s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), x=s%60;
+  return 'Selbstzerstörung in '+(h?h+':'+('0'+m).slice(-2):m)+':'+('0'+x).slice(-2);
+}
+function burnTick(){
+  if(!CL.me)return; var now=Date.now();
+  if(notes.some(function(n){return n.burnAt&&n.burnAt<=now})){notes=notes.filter(function(n){return !(n.burnAt&&n.burnAt<=now)});saveNotes();renderNotes();return}
+  document.querySelectorAll('[data-burn]').forEach(function(e){e.textContent=burnText(parseInt(e.dataset.burn,10))});
+}
+
+/* ---------- Krypto-Labor ---------- */
+var MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.','.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--','/':'-..-.','-':'-....-','(':'-.--.',')':'-.--.-',':':'---...','=':'-...-','+':'.-.-.','@':'.--.-.'};
+var MORSE_REV={}; Object.keys(MORSE).forEach(function(k){MORSE_REV[MORSE[k]]=k});
+function morseEnc(t){return t.toUpperCase().replace(/Ä/g,'AE').replace(/Ö/g,'OE').replace(/Ü/g,'UE').replace(/ß/g,'SS').split(/\s+/).filter(Boolean).map(function(w){return w.split('').map(function(c){return MORSE[c]}).filter(Boolean).join(' ')}).filter(Boolean).join(' / ')}
+function morseDec(t){return t.replace(/[·•]/g,'.').replace(/[–—−_]/g,'-').trim().split(/\s*\/\s*|\s{3,}/).map(function(w){return w.split(/\s+/).map(function(c){return MORSE_REV[c]||''}).join('')}).join(' ')}
+function shiftLetters(t,fn){return t.replace(/[a-z]/gi,function(c,i){var up=c<='Z',b=up?65:97,idx=c.charCodeAt(0)-b;return String.fromCharCode(b+fn(idx,i))})}
+function mod26(x){return ((x%26)+26)%26}
+function caesar(t,k){return shiftLetters(t,function(i){return mod26(i+k)})}
+function atbash(t){return shiftLetters(t,function(i){return 25-i})}
+function vigenere(t,key,dir){
+  var ks=key.toLowerCase().replace(/[^a-z]/g,''); if(!ks)throw new Error('Bitte ein Schlüsselwort aus Buchstaben eintragen.');
+  var p=0; return t.replace(/[a-z]/gi,function(c){var up=c<='Z',b=up?65:97,k=ks.charCodeAt(p++%ks.length)-97;return String.fromCharCode(b+mod26(c.charCodeAt(0)-b+dir*k))});
+}
+function toBin(t){return Array.prototype.map.call(new TextEncoder().encode(t),function(b){return ('00000000'+b.toString(2)).slice(-8)}).join(' ')}
+function fromBin(t){var parts=t.trim().split(/\s+/);var bytes=parts.map(function(p){if(!/^[01]{1,8}$/.test(p))throw new Error('Das ist kein gültiger Binärcode.');return parseInt(p,2)});return new TextDecoder().decode(new Uint8Array(bytes))}
+function aesEnc(t,pw){
+  if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error('Dieser Browser bietet keine Verschlüsselung.'));
+  if(pw.length<4)return Promise.reject(new Error('Das Passwort braucht mindestens 4 Zeichen.'));
+  var salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  return deriveKey('EPSA',pw,salt).then(function(k){return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},k,new TextEncoder().encode(t))}).then(function(ct){var all=new Uint8Array(28+ct.byteLength);all.set(salt,0);all.set(iv,16);all.set(new Uint8Array(ct),28);return 'EPSA1.'+b64(all)});
+}
+function aesDec(t,pw){
+  if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error('Dieser Browser bietet keine Verschlüsselung.'));
+  t=t.trim(); if(t.indexOf('EPSA1.')!==0)return Promise.reject(new Error('Das ist kein EPSA-Geheimtext. Er beginnt mit EPSA1.'));
+  var all; try{all=unb64(t.slice(6))}catch(e){return Promise.reject(new Error('Der Geheimtext ist beschädigt.'))}
+  if(all.length<45)return Promise.reject(new Error('Der Geheimtext ist beschädigt.'));
+  return deriveKey('EPSA',pw,all.slice(0,16)).then(function(k){return crypto.subtle.decrypt({name:'AES-GCM',iv:all.slice(16,28)},k,all.slice(28))}).then(function(pt){return new TextDecoder().decode(pt)},function(){throw new Error('Falsches Passwort oder beschädigter Text.')});
+}
+function copyText(t,msg){
+  if(!t)return; var ok=function(){msg.style.color='var(--ok)';msg.textContent='Kopiert.'}, fail=function(){msg.style.color='var(--warn)';msg.textContent='Kopieren nicht möglich. Markiere den Text und kopiere ihn von Hand.'};
+  try{navigator.clipboard.writeText(t).then(ok,fail)}catch(e){fail()}
+}
+function algoUi(){
+  var a=$('#kAlgo').value, keyed=(a==='caesar'||a==='vigenere'||a==='aes'), plain=(a==='morse'||a==='base64'||a==='binary');
+  $('#kKeyWrap').hidden=!keyed;
+  $('#kKeyLbl').textContent=a==='caesar'?'Verschiebung (Zahl, z. B. 3)':a==='vigenere'?'Schlüsselwort (Buchstaben)':'Passwort';
+  $('#kKey').type=a==='aes'?'password':'text';
+  $('#kEnc').textContent=plain||a==='atbash'?'Kodieren':'Verschlüsseln'; $('#kDec').textContent=plain||a==='atbash'?'Dekodieren':'Entschlüsseln';
+  $('#kPlay').hidden=a!=='morse';
+}
+function kRun(dec){
+  var a=$('#kAlgo').value, t=$('#kIn').value, key=$('#kKey').value, msg=$('#kMsg'), out=$('#kOut');
+  msg.style.color='var(--bad)'; msg.textContent='';
+  function show(v){out.value=v;msg.style.color='var(--ok)';msg.textContent='Fertig.'}
+  function fail(e){out.value='';msg.style.color='var(--bad)';msg.textContent=(e&&e.message)||'Das hat nicht geklappt.'}
+  if(!t){fail({message:'Bitte zuerst einen Text eingeben.'});return}
+  try{
+    if(a==='caesar'){var k=parseInt(key||'3',10);if(!isFinite(k))throw new Error('Die Verschiebung muss eine Zahl sein.');show(caesar(t,dec?-k:k))}
+    else if(a==='atbash')show(atbash(t));
+    else if(a==='vigenere')show(vigenere(t,key,dec?-1:1));
+    else if(a==='morse'){var r=dec?morseDec(t):morseEnc(t);if(!r)throw new Error('Daraus ließ sich nichts umwandeln.');show(r)}
+    else if(a==='base64'){if(dec){var u=unb64(t.trim().replace(/\s+/g,''));show(new TextDecoder().decode(u))}else show(b64(new TextEncoder().encode(t)))}
+    else if(a==='binary')show(dec?fromBin(t):toBin(t));
+    else if(a==='aes'){(dec?aesDec(t,key):aesEnc(t,key)).then(show,fail)}
+  }catch(e){fail(e.name==='InvalidCharacterError'?{message:'Das ist kein gültiges Base64.'}:e)}
+}
+function kSet(text,algo,dec){showView('crypto');$('#kAlgo').value=algo;algoUi();$('#kIn').value=text;kRun(dec)}
+$('#kAlgo').addEventListener('change',algoUi); algoUi();
+$('#kEnc').addEventListener('click',function(){kRun(false)});
+$('#kDec').addEventListener('click',function(){kRun(true)});
+$('#kSwap').addEventListener('click',function(){$('#kIn').value=$('#kOut').value;$('#kOut').value=''});
+$('#kCopy').addEventListener('click',function(){copyText($('#kOut').value,$('#kMsg'))});
+var mAc=null;
+$('#kPlay').addEventListener('click',function(){
+  var code=$('#kAlgo').value==='morse'?($('#kOut').value&&/^[.\-\s\/]+$/.test($('#kOut').value)?$('#kOut').value:morseEnc($('#kIn').value)):'';
+  if(!code)return;
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return; if(!mAc)mAc=new AC(); if(mAc.state==='suspended')mAc.resume();
+    var t=mAc.currentTime+.05, u=.07, g=mAc.createGain(); g.gain.value=.15; g.connect(mAc.destination);
+    code.split('').forEach(function(c){
+      if(c==='.'||c==='-'){var o=mAc.createOscillator();o.frequency.value=620;o.connect(g);o.start(t);t+=(c==='.'?u:3*u);o.stop(t);t+=u}
+      else if(c===' ')t+=2*u; else if(c==='/')t+=4*u;
+    });
+  }catch(e){}
+});
+function genPw(){
+  var lower='abcdefghijkmnopqrstuvwxyz',upper='ABCDEFGHJKLMNPQRSTUVWXYZ',dig='23456789',sym='!@#$%&*-_=+?', len=parseInt($('#gLen').value,10), pool=lower+upper+dig+($('#gSym').checked?sym:'');
+  function pick(set){var lim=Math.floor(256/set.length)*set.length,b=new Uint8Array(1);do{crypto.getRandomValues(b)}while(b[0]>=lim);return set[b[0]%set.length]}
+  var out=[pick(lower),pick(upper),pick(dig)]; if($('#gSym').checked)out.push(pick(sym));
+  while(out.length<len)out.push(pick(pool));
+  for(var i=out.length-1;i>0;i--){var b=new Uint8Array(1),lim=Math.floor(256/(i+1))*(i+1);do{crypto.getRandomValues(b)}while(b[0]>=lim);var j=b[0]%(i+1);var x=out[i];out[i]=out[j];out[j]=x}
+  $('#gOut').value=out.join('');
+}
+$('#gLen').addEventListener('input',function(){$('#gLenLbl').textContent='Länge: '+this.value});
+$('#gGo').addEventListener('click',function(){if(!(window.crypto&&crypto.getRandomValues)){$('#gMsg').textContent='Dieser Browser hat keinen sicheren Zufallsgenerator.';return}genPw();$('#gMsg').textContent=''});
+$('#gCopy').addEventListener('click',function(){copyText($('#gOut').value,$('#gMsg'))});
+
+/* ---------- Signale (reine Simulation) ---------- */
+var SIG={raf:0,cx:null,W:0,H:0,S:0,last:0,paused:false,msgs:[],timer:0,car:[]};
+var SIGW=['ALPHA','NACHT','FALKE','KONVOI','SCHATTEN','RABE','TRESOR','LICHT','BRUECKE','NEBEL','KOMET','ADLER','FLUSS','SIGNAL'];
+for(var ci=0;ci<7;ci++)SIG.car.push({f:Math.random(),a:.35+Math.random()*.6,w:.004+Math.random()*.01,d:(Math.random()-.5)*.00025,m:.6+Math.random()*3});
+function sigSize(){
+  var cv=$('#sigCv'), r=cv.getBoundingClientRect(); if(!r.width)return false;
+  var d=Math.min(2,window.devicePixelRatio||1), W=Math.round(r.width*d), H=Math.round(r.height*d);
+  if(W!==SIG.W||H!==SIG.H){cv.width=W;cv.height=H;SIG.W=W;SIG.H=H;SIG.S=Math.round(H*.36);SIG.cx=cv.getContext('2d');SIG.cx.fillStyle='#050b13';SIG.cx.fillRect(0,0,W,H)}
+  return true;
+}
+function sigFrame(now){
+  SIG.raf=requestAnimationFrame(sigFrame);
+  if(SIG.paused||document.hidden||now-SIG.last<(reduced?400:45))return; SIG.last=now;
+  if(!sigSize())return; var c=SIG.cx, W=SIG.W, H=SIG.H, S=SIG.S, t=now/1000, cv=$('#sigCv'), v=new Float32Array(W);
+  SIG.car.forEach(function(k){k.f+=k.d;if(k.f<.02||k.f>.98)k.d=-k.d});
+  for(var x=0;x<W;x+=2){var f=x/W,sv=.07+Math.random()*.09;for(var k=0;k<SIG.car.length;k++){var cr=SIG.car[k],z=(f-cr.f)/cr.w;if(z>-5&&z<5)sv+=cr.a*(.55+.45*Math.sin(t*cr.m+k))*Math.exp(-z*z/2)}v[x]=sv>1?1:sv}
+  c.drawImage(cv,0,S,W,H-S-1,0,S+1,W,H-S-1);
+  for(var x1=0;x1<W;x1+=2){var u=v[x1];c.fillStyle='rgb('+Math.round(255*u*u*u)+','+Math.round(40+190*u*u)+','+Math.round(60+195*u)+')';c.fillRect(x1,S,2,1)}
+  c.fillStyle='#050b13'; c.fillRect(0,0,W,S);
+  c.strokeStyle='rgba(60,200,255,.12)'; c.lineWidth=1; c.beginPath();
+  for(var g=1;g<4;g++){var gx=Math.round(W*g/4)+.5;c.moveTo(gx,0);c.lineTo(gx,S)}
+  for(var h=1;h<4;h++){var gy=Math.round(S*h/4)+.5;c.moveTo(0,gy);c.lineTo(W,gy)}
+  c.stroke();
+  c.strokeStyle='#3cc8ff'; c.lineWidth=Math.max(1,W/900); c.beginPath();
+  for(var x2=0;x2<W;x2+=2){var y=S-4-v[x2]*(S-10);if(x2)c.lineTo(x2,y);else c.moveTo(x2,y)}
+  c.stroke(); c.lineTo(W,S); c.lineTo(0,S); c.fillStyle='rgba(60,200,255,.12)'; c.fill();
+}
+function sigMsg(){
+  var k=Math.random(), f=(3+Math.random()*25).toFixed(3), tm=new Date().toLocaleTimeString('de-DE');
+  if(k<.4){var g=[];for(var i=0;i<8;i++)g.push(('00000'+Math.floor(Math.random()*100000)).slice(-5));return {f:f,tm:tm,kind:'Zahlenstation',txt:g.join(' ')}}
+  if(k<.75){var w=SIGW[Math.floor(Math.random()*SIGW.length)]+' '+SIGW[Math.floor(Math.random()*SIGW.length)];return {f:f,tm:tm,kind:'Morse',txt:morseEnc(w)}}
+  var a=new Uint8Array(24);for(var j=0;j<24;j++)a[j]=Math.floor(Math.random()*256);
+  return {f:f,tm:tm,kind:'Verschlüsselt',txt:'EPSA1.'+b64(a)};
+}
+function renderSig(){
+  $('#sigInfo').textContent=SIG.msgs.length+' Meldungen · '+(SIG.paused?'angehalten':'Scan läuft');
+  var l=$('#sigFeed'); l.textContent='';
+  if(!SIG.msgs.length){l.appendChild(el('div','empty','Noch keine Meldungen. Der Scan läuft.'));return}
+  SIG.msgs.forEach(function(m){
+    var c=el('div','sigmsg'), h=el('div',null,''); h.appendChild(el('span','k',m.kind)); h.appendChild(document.createTextNode('  ·  '+m.f+' MHz  ·  '+m.tm)); c.appendChild(h);
+    c.appendChild(el('div','tx',m.txt));
+    if(m.kind==='Morse'){var b=el('button','btn sm ghost','Im Krypto-Labor dekodieren');b.type='button';b.style.justifySelf='start';b.addEventListener('click',function(){kSet(m.txt,'morse',true)});c.appendChild(b)}
+    l.appendChild(c);
+  });
+}
+function sigStart(){
+  if(!SIG.msgs.length){for(var i=0;i<3;i++)SIG.msgs.push(sigMsg())}
+  if(!SIG.raf)SIG.raf=requestAnimationFrame(sigFrame);
+  if(!SIG.timer)SIG.timer=setInterval(function(){if(SIG.paused||document.hidden)return;SIG.msgs.unshift(sigMsg());if(SIG.msgs.length>40)SIG.msgs.pop();renderSig()},4500);
+  renderSig();
+}
+function sigStop(){if(SIG.raf){cancelAnimationFrame(SIG.raf);SIG.raf=0}if(SIG.timer){clearInterval(SIG.timer);SIG.timer=0}}
+$('#sigPause').addEventListener('click',function(){SIG.paused=!SIG.paused;this.textContent=SIG.paused?'Scan fortsetzen':'Scan anhalten';renderSig()});
+$('#sigClear').addEventListener('click',function(){SIG.msgs=[];renderSig()});
+
+/* ---------- Tarnmodus ---------- */
+var coverOn=false, lastEsc=0, savedTitle='';
+function buildCover(){
+  var t=$('#cvTable'); if(t.firstChild)return;
+  var rows=[['Position','Q1','Q2','Q3','Q4','Summe'],['Personal',41200,41850,42100,43300],['Miete',18000,18000,18000,18000],['Material',9650,11200,8740,12100],['Reisen',3120,4480,2950,5610],['Software',2210,2210,2410,2410],['Marketing',7800,6400,9150,8300],['Sonstiges',1340,980,1720,1130]];
+  rows.forEach(function(r,i){
+    var tr=document.createElement('tr'); if(i>0){var sum=r.slice(1).reduce(function(a,b){return a+b},0);r=r.concat([sum])}
+    r.forEach(function(c){var td=document.createElement(i===0?'th':'td');td.textContent=(typeof c==='number')?c.toLocaleString('de-DE')+' €':c;tr.appendChild(td)});
+    t.appendChild(tr);
+  });
+}
+function toggleCover(){
+  coverOn=!coverOn; $('#cover').hidden=!coverOn;
+  if(coverOn){buildCover();savedTitle=document.title;document.title='Budget_2026_Entwurf';stopLoop();sigStop()}
+  else{document.title=savedTitle;showView(view)}
+}
+$('#coverBtn').addEventListener('click',toggleCover);
+$('#cvBar').addEventListener('dblclick',toggleCover);
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return; var n=Date.now();
+  if(n-lastEsc<600&&!$('#app').hidden){toggleCover();lastEsc=0;return}
+  lastEsc=n;
 });
 
 /* ---------- Einschlag-Modus (rein visueller Effekt, keine echte Wirkung) ---------- */
@@ -1400,7 +1813,7 @@ function gcPts(a,b,n){
 
 function initMap(){
   if(typeof L==='undefined'){offline=true;$('#basebar').hidden=true;$('#offUI').hidden=false;$('#status').textContent='';FX.project=OFF.proj;OFF.init();return}
-  map=L.map('lmap',{center:[30,10],zoom:3,minZoom:2,worldCopyJump:true,zoomControl:false,preferCanvas:true});
+  map=L.map('lmap',{center:[30,10],zoom:3,minZoom:2,worldCopyJump:true,zoomControl:false,preferCanvas:true,renderer:L.canvas({tolerance:14})});
   L.control.zoom({position:'topright'}).addTo(map);
   map.createPane('labels'); map.getPane('labels').style.zIndex=350; map.getPane('labels').style.pointerEvents='none';
   base.dark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap-Mitwirkende © CARTO'});
@@ -1454,35 +1867,63 @@ function initMap(){
   });
   map.on('click',function(e){clickPosLive=[e.latlng.lat,wrapLon(e.latlng.lng)];deselect()});
   map.on('mousemove',function(e){$('#readout').textContent=fmtLat(e.latlng.lat)+'  '+fmtLon(wrapLon(e.latlng.lng))+'   Zoom '+map.getZoom()});
+  map.on('zoomend',function(){restyleAll()});
   map.on('moveend',function(){clearTimeout(moveT);moveT=setTimeout(function(){refresh(true)},700)});
   new ResizeObserver(function(){if(view==='karte')map.invalidateSize()}).observe($('#stage'));
   renderCams(); renderPanel(); pinNotes();
 }
 function resizeMap(){if(offline){OFF.resize();return}if(map)setTimeout(function(){map.invalidateSize()},50)}
-function startLoop(){if(offline){OFF.start();return}if(!loopT)loopT=setInterval(function(){refresh(false)},3000);refresh(true)}
+function startLoop(){if(offline){OFF.start();return}if(!loopT)loopT=setInterval(function(){refresh(false)},2000);refresh(true)}
 function stopLoop(){if(offline){OFF.stop();return}clearInterval(loopT);loopT=0}
 function refresh(force){
   if(!map||document.hidden||view!=='karte')return;
   var now=Date.now(), z=map.getZoom(), mode=z>=5?'pt':'os';
-  if(on.fl&&(mode!==flMode||(force&&z>=5)||now-last.fl>(z>=5?10000:60000)))updFlights();
-  if(on.tr&&(force||now-last.tr>10000))updTransit();
+  if(on.fl&&(mode!==flMode||(force&&z>=5)||now-last.fl>(z>=5?6000:60000)))updFlights();
+  if(on.tr&&(force||now-last.tr>6000))updTransit();
   if(on.cam&&(force||now-last.cam>120000))updCams();
 }
 function deselect(){sel=null;LG.route.clearLayers();renderFlights(DATA.fl);renderPanel()}
 
+/* ----- Hilfen: Zoomgrößen, weiche Bewegung ----- */
+var POOL={fl:{},tr:{}};
+function zs(lo,hi,z0,z1){var z=map?map.getZoom():z0;return Math.round(lo+(hi-lo)*Math.min(1,Math.max(0,(z-z0)/(z1-z0))))}
+function glide(m,lat,lon,ms){
+  if(m._g){cancelAnimationFrame(m._g);m._g=0}
+  var a=m.getLatLng();
+  if(reduced||ms<=0||Math.abs(a.lat-lat)>.2||Math.abs(a.lng-lon)>.2){m.setLatLng([lat,lon]);return}
+  if(Math.abs(a.lat-lat)<1e-7&&Math.abs(a.lng-lon)<1e-7)return;
+  var t0=performance.now();
+  (function step(now){var f=Math.min(1,(now-t0)/ms);f=f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2;m.setLatLng([a.lat+(lat-a.lat)*f,a.lng+(lon-a.lng)*f]);if(f<1)m._g=requestAnimationFrame(step);else m._g=0})(t0);
+}
+function dropPool(pool,keep,layer){Object.keys(pool).forEach(function(k){if(!keep[k]){if(pool[k]._g)cancelAnimationFrame(pool[k]._g);layer.removeLayer(pool[k]);delete pool[k]}})}
+function restyleAll(){if(!map)return;if(DATA.fl.length)renderFlights(DATA.fl,true);if(DATA.tr.length)renderTransit(DATA.tr,true);renderCams()}
+
 /* ----- Flugzeuge ----- */
 function planeIcon(trk,s){
-  var r=num(trk)?trk:0, col=s?'#8fe6ff':'#e8f6ff';
-  return L.divIcon({className:'pl',iconSize:[22,22],iconAnchor:[11,11],html:'<svg width="22" height="22" viewBox="-11 -11 22 22" style="transform:rotate('+r+'deg);filter:drop-shadow(0 0 4px rgba(60,200,255,.7))"><path d="M0-9L5.5 7L0 4L-5.5 7Z" fill="'+col+'"/></svg>'});
+  var r=num(trk)?trk:0, col=s?'#8fe6ff':'#e8f6ff', sz=zs(18,34,3,12), hb=Math.max(40,sz+14);
+  return L.divIcon({className:'pl',iconSize:[hb,hb],iconAnchor:[hb/2,hb/2],html:'<svg width="'+sz+'" height="'+sz+'" viewBox="-11 -11 22 22" style="transform:rotate('+r+'deg);filter:drop-shadow(0 0 4px rgba(60,200,255,.7));pointer-events:none"><path d="M0-9L5.5 7L0 4L-5.5 7Z" fill="'+col+'"/></svg>'});
 }
-function renderFlights(list){
-  LG.fl.clearLayers(); var many=list.length>250;
+function renderFlights(list,restyle){
+  var many=list.length>250, keep={}, rad=zs(3,6,3,10), gl=restyle?0:5500;
   list.forEach(function(a){
-    var isSel=sel&&sel.type==='fl'&&sel.id===a.id, m;
-    if(many&&!isSel){m=L.circleMarker([a.lat,a.lon],{radius:3,weight:0,fillColor:'#e8f6ff',fillOpacity:.85,bubblingMouseEvents:false})}
-    else{m=L.marker([a.lat,a.lon],{icon:planeIcon(a.trk,isSel),bubblingMouseEvents:false,keyboard:false});if(a.cs)m.bindTooltip(a.cs,{direction:'top',offset:[0,-8]})}
-    m.on('click',function(){selectFlight(a.id)}); m.addTo(LG.fl);
+    var isSel=sel&&sel.type==='fl'&&sel.id===a.id, kind=(many&&!isSel)?'c':'m', m=POOL.fl[a.id];
+    keep[a.id]=1;
+    if(m&&m._kind!==kind){if(m._g)cancelAnimationFrame(m._g);LG.fl.removeLayer(m);m=null;delete POOL.fl[a.id]}
+    if(!m){
+      m=kind==='c'?L.circleMarker([a.lat,a.lon],{radius:rad,weight:0,fillColor:'#e8f6ff',fillOpacity:.9,bubblingMouseEvents:false}):L.marker([a.lat,a.lon],{icon:planeIcon(a.trk,isSel),bubblingMouseEvents:false,keyboard:false});
+      m._kind=kind; m._id=a.id; m.on('click',function(){selectFlight(m._id)});
+      if(kind==='m'){m._sig=[a.trk,isSel,zs(18,34,3,12)];if(a.cs)m.bindTooltip(a.cs,{direction:'top',offset:[0,-10]})}
+      m.addTo(LG.fl); POOL.fl[a.id]=m;
+    }else{
+      if(kind==='c'){m.setRadius(rad);m.setStyle({fillOpacity:.9});glide(m,a.lat,a.lon,gl)}
+      else{
+        var sg=[a.trk,isSel,zs(18,34,3,12)];
+        if(!m._sig||m._sig[0]!==sg[0]||m._sig[1]!==sg[1]||m._sig[2]!==sg[2]){m.setIcon(planeIcon(a.trk,isSel));m._sig=sg}
+        glide(m,a.lat,a.lon,gl);
+      }
+    }
   });
+  dropPool(POOL.fl,keep,LG.fl);
 }
 function updFlights(){
   if(busy.fl)return; busy.fl=true;
@@ -1514,7 +1955,7 @@ function updFlights(){
 }
 function findFl(id){for(var i=0;i<DATA.fl.length;i++)if(DATA.fl[i].id===id)return DATA.fl[i];return null}
 function selectFlight(id){
-  sel={type:'fl',id:id,route:null}; LG.route.clearLayers(); renderFlights(DATA.fl); renderPanel();
+  sel={type:'fl',id:id,route:null}; LG.route.clearLayers(); renderFlights(DATA.fl,true); renderPanel();
   var a=findFl(id); if(a&&a.cs)loadRoute(a.cs,id); else{sel.route=false;updatePanelLive()}
 }
 function loadRoute(cs,id){
@@ -1534,12 +1975,12 @@ function updTransit(){
   if(busy.tr)return;
   var z=map.getZoom(), b=map.getBounds(), c=map.getCenter(), lng=wrapLon(c.lng);
   var inBer=c.lat>52.2&&c.lat<52.8&&lng>12.9&&lng<13.9, inDE=c.lat>47.2&&c.lat<55.1&&lng>5.8&&lng<15.1;
-  if(!inDE){LG.tr.clearLayers();DATA.tr=[];setStatus('tr','Live-Fahrzeuge gibt es hier nur in Deutschland. Springe zu Berlin.','warn');return}
-  var minZ=inBer?12:10;
-  if(z<minZ){LG.tr.clearLayers();DATA.tr=[];setStatus('tr','sichtbar ab Zoomstufe '+minZ+(inBer?' (Berlin, alle Linien)':' (Deutschland, Bahn und Regionalverkehr)'),'warn');return}
+  if(!inDE){dropPool(POOL.tr,{},LG.tr);DATA.tr=[];setStatus('tr','Live-Fahrzeuge gibt es hier nur in Deutschland. Springe zu Berlin.','warn');return}
+  var minZ=inBer?9:7;
+  if(z<minZ){dropPool(POOL.tr,{},LG.tr);DATA.tr=[];setStatus('tr','sichtbar ab Zoomstufe '+minZ+(inBer?' (Berlin, alle Linien)':' (Deutschland, Bahn und Regionalverkehr)'),'warn');return}
   busy.tr=true;
   var host=inBer?'https://v6.bvg.transport.rest':'https://v6.db.transport.rest';
-  var url=host+'/radar?north='+b.getNorth().toFixed(5)+'&west='+b.getWest().toFixed(5)+'&south='+b.getSouth().toFixed(5)+'&east='+b.getEast().toFixed(5)+'&results=256&duration=30&frames=1&polylines=false&language=de';
+  var url=host+'/radar?north='+b.getNorth().toFixed(5)+'&west='+b.getWest().toFixed(5)+'&south='+b.getSouth().toFixed(5)+'&east='+b.getEast().toFixed(5)+'&results=512&duration=30&frames=1&polylines=false&language=de';
   jget(url,null,15000).then(function(d){
     var list=(d.movements||[]).filter(function(m){return m.location&&num(m.location.latitude)&&num(m.location.longitude)}).map(function(m){
       var ns=m.nextStopovers&&m.nextStopovers[0];
@@ -1550,43 +1991,80 @@ function updTransit(){
     setStatus('tr',list.length+' Fahrzeuge live · '+(inBer?'BVG':'Deutsche Bahn')+' · '+nowT(),'ok'); updatePanelLive();
   }).catch(function(e){setStatus('tr',errText(e),'bad')}).then(function(){busy.tr=false;last.tr=Date.now()});
 }
-function renderTransit(list){
-  LG.tr.clearLayers(); var big=map.getZoom()>=13;
+function vehIcon(v,isSel){
+  var z=map.getZoom(), sz=zs(14,28,7,16), lab=z>=11||isSel, hb=Math.max(44,sz+22);
+  var e=el('div','veh',lab?v.line:''); e.style.background=PCOL[v.prod]||'#d7e6f5';
+  if(lab){e.style.minWidth=sz+'px';e.style.height=sz+'px';e.style.padding='0 '+Math.round(sz/4)+'px';e.style.fontSize=Math.max(10,Math.round(sz*.5))+'px'}
+  else{e.style.width=sz+'px';e.style.height=sz+'px';e.style.borderRadius='50%'}
+  if(isSel)e.style.outline='2px solid #fff';
+  return L.divIcon({className:'vh',html:e,iconSize:[hb,hb],iconAnchor:[hb/2,hb/2]});
+}
+function renderTransit(list,restyle){
+  var keep={}, gl=restyle?0:5500, z=map.getZoom();
   list.forEach(function(v){
-    var isSel=sel&&sel.type==='tr'&&sel.id===v.id, e=el('div','veh',big||isSel?v.line:'');
-    e.style.background=PCOL[v.prod]||'#d7e6f5'; if(!big&&!isSel){e.style.width='10px';e.style.height='10px';e.style.padding='0'} if(isSel)e.style.outline='2px solid #fff';
-    var m=L.marker([v.lat,v.lon],{icon:L.divIcon({className:'vehw',html:e,iconSize:null}),bubblingMouseEvents:false,keyboard:false});
-    m.on('click',function(){sel={type:'tr',id:v.id};LG.route.clearLayers();renderTransit(DATA.tr);renderPanel()}); m.addTo(LG.tr);
+    var isSel=sel&&sel.type==='tr'&&sel.id===v.id, m=POOL.tr[v.id]; keep[v.id]=1;
+    var sg=[zs(14,28,7,16),z>=11,isSel,v.line];
+    if(!m){
+      m=L.marker([v.lat,v.lon],{icon:vehIcon(v,isSel),bubblingMouseEvents:false,keyboard:false,zIndexOffset:isSel?1000:0}); m._sig=sg; m._id=v.id;
+      m.on('click',function(){sel={type:'tr',id:m._id};LG.route.clearLayers();renderTransit(DATA.tr,true);renderPanel()});
+      m.addTo(LG.tr); POOL.tr[v.id]=m;
+    }else{
+      var o=m._sig; if(!o||o[0]!==sg[0]||o[1]!==sg[1]||o[2]!==sg[2]||o[3]!==sg[3]){m.setIcon(vehIcon(v,isSel));m._sig=sg;m.setZIndexOffset(isSel?1000:0)}
+      glide(m,v.lat,v.lon,gl);
+    }
   });
+  dropPool(POOL.tr,keep,LG.tr);
 }
 
 /* ----- Kameras ----- */
+function camIcon(win){var sz=zs(14,22,3,12), hb=Math.max(38,sz+18);return L.divIcon({className:'cam-w',html:'<div class="cam-i'+(win?' win':'')+'" style="width:'+sz+'px;height:'+sz+'px"></div>',iconSize:[hb,hb],iconAnchor:[hb/2,hb/2]})}
 function renderCams(){
   LG.cam.clearLayers();
   CAMS.forEach(function(c,i){
-    var m=L.marker([c[1],c[2]],{icon:L.divIcon({className:'cam-w',html:'<div class="cam-i"></div>',iconSize:[14,14],iconAnchor:[7,7]}),bubblingMouseEvents:false,keyboard:false});
-    m.bindTooltip(c[0],{direction:'top',offset:[0,-8]}); m.on('click',function(){sel={type:'cam',i:i};LG.route.clearLayers();renderPanel()}); m.addTo(LG.cam);
+    var m=L.marker([c[1],c[2]],{icon:camIcon(false),bubblingMouseEvents:false,keyboard:false});
+    m.bindTooltip(c[0],{direction:'top',offset:[0,-10]}); m.on('click',function(){sel={type:'cam',i:i};LG.route.clearLayers();renderPanel()}); m.addTo(LG.cam);
   });
   DATA.win.forEach(function(w,i){
-    var m=L.marker([w.lat,w.lon],{icon:L.divIcon({className:'cam-w',html:'<div class="cam-i win"></div>',iconSize:[14,14],iconAnchor:[7,7]}),bubblingMouseEvents:false,keyboard:false});
-    m.bindTooltip(w.title,{direction:'top',offset:[0,-8]}); m.on('click',function(){sel={type:'win',i:i};LG.route.clearLayers();renderPanel()}); m.addTo(LG.cam);
+    var m=L.marker([w.lat,w.lon],{icon:camIcon(true),bubblingMouseEvents:false,keyboard:false,zIndexOffset:500});
+    m.bindTooltip(w.title,{direction:'top',offset:[0,-10]}); m.on('click',function(){sel={type:'win',i:i};LG.route.clearLayers();renderPanel()}); m.addTo(LG.cam);
   });
 }
 function getKey(){var k=store(WKEY);return k&&k.trim()?k.trim():''}
+function camErr(e){
+  var m=(e&&e.message)||'';
+  if(/HTTP 401|HTTP 403/.test(m))return 'Windy lehnt den Schlüssel ab. Er muss ein Schlüssel für die „Webcams API“ sein, nicht für „Map Forecast“.';
+  if(/HTTP 400/.test(m))return 'Windy hat die Anfrage abgelehnt (400). Zoome etwas näher heran.';
+  return errText(e);
+}
+function mapWin(d){
+  return (d.webcams||[]).filter(function(w){return w.location&&num(w.location.latitude)&&num(w.location.longitude)}).map(function(w){
+    var pl=w.player||{}, cur=w.images&&w.images.current;
+    var emb=(pl.live&&pl.live.embed)||(pl.day&&pl.day.embed)||(pl.lifetime&&pl.lifetime.embed)||'';
+    return {id:w.webcamId||w.id,title:w.title||'Webcam',lat:w.location.latitude,lon:w.location.longitude,place:[w.location.city,w.location.country].filter(Boolean).join(', '),
+      embed:emb,live:!!(pl.live&&pl.live.embed),img:cur&&(cur.preview||cur.thumbnail)||'',detail:w.urls&&(w.urls.detail||w.urls.provider)||''};
+  });
+}
 function updCams(){
   if(busy.cam)return; var key=getKey();
   if(!key){setStatus('cam',CAMS.length+' Standorte. Für Live-Webcams Windy-Schlüssel eintragen','warn');return}
-  var z=map.getZoom(); if(z<6){setStatus('cam','Live-Webcams ab Zoomstufe 6','warn');return}
-  busy.cam=true; var c=map.getCenter(), km=Math.min(250,Math.max(5,Math.ceil(map.getBounds().getNorthEast().distanceTo(c)/1000)));
-  jget('https://api.windy.com/webcams/api/v3/webcams?nearby='+c.lat.toFixed(4)+','+wrapLon(c.lng).toFixed(4)+','+km+'&limit=50&offset=0&lang=de&include=location,images,player,urls',{headers:{'x-windy-api-key':key}},15000).then(function(d){
-    DATA.win=(d.webcams||[]).filter(function(w){return w.location&&num(w.location.latitude)&&num(w.location.longitude)}).map(function(w){
-      var pl=w.player||{}, cur=w.images&&w.images.current;
-      var emb=(pl.live&&pl.live.embed)||(pl.day&&pl.day.embed)||(pl.lifetime&&pl.lifetime.embed)||'';
-      return {id:w.webcamId||w.id,title:w.title||'Webcam',lat:w.location.latitude,lon:w.location.longitude,place:[w.location.city,w.location.country].filter(Boolean).join(', '),
-        embed:emb,live:!!(pl.live&&pl.live.embed),img:cur&&(cur.preview||cur.thumbnail)||'',detail:w.urls&&(w.urls.detail||w.urls.provider)||''};
-    });
-    renderCams(); setStatus('cam',DATA.win.length+' Live-Webcams · Windy · '+nowT(),'ok');
-  }).catch(function(e){setStatus('cam',errText(e),'bad')}).then(function(){busy.cam=false;last.cam=Date.now()});
+  var z=map.getZoom(); if(z<3){setStatus('cam','Live-Webcams ab Zoomstufe 3 (Schlüssel gespeichert)','warn');return}
+  busy.cam=true; var b=map.getBounds(), c=map.getCenter();
+  var H={headers:{'x-windy-api-key':key}}, inc='&lang=de&include=location,images,player,urls';
+  var bbox=Math.min(90,b.getNorth()).toFixed(3)+','+Math.min(180,b.getEast()).toFixed(3)+','+Math.max(-90,b.getSouth()).toFixed(3)+','+Math.max(-180,b.getWest()).toFixed(3);
+  var km=Math.min(250,Math.max(5,Math.ceil(b.getNorthEast().distanceTo(c)/1000)));
+  var near='nearby='+c.lat.toFixed(4)+','+wrapLon(c.lng).toFixed(4)+','+km;
+  var base='https://api.windy.com/webcams/api/v3/webcams?';
+  function page(q,off){return jget(base+q+'&limit=50&offset='+off+inc,H,15000)}
+  var q1='bbox='+bbox;
+  Promise.all([page(q1,0),page(q1,50)]).catch(function(e){
+    if(e&&/HTTP 400/.test(e.message))return Promise.all([page(near,0),page(near,50)]);
+    throw e;
+  }).then(function(r){
+    var all=mapWin(r[0]).concat(mapWin(r[1])), seen={};
+    DATA.win=all.filter(function(w){if(seen[w.id])return false;seen[w.id]=1;return true});
+    renderCams();
+    setStatus('cam',DATA.win.length?DATA.win.length+' Live-Webcams · Windy · '+nowT():'Windy antwortet, aber hier gibt es keine Webcams. Zoome auf eine Stadt.',DATA.win.length?'ok':'warn');
+  }).catch(function(e){setStatus('cam',camErr(e),'bad')}).then(function(){busy.cam=false;last.cam=Date.now()});
 }
 
 /* ----- Seitenleiste ----- */
@@ -1594,7 +2072,7 @@ function renderPanel(){
   var s=$('#side'); s.textContent=''; panelLive={};
   if(!sel){
     s.appendChild(el('div','lbl','Lagebild live')); s.appendChild(el('h3',null,'Globale Karte'));
-    s.appendChild(el('p',null,'Karte ziehen und zoomen. Klicke auf ein Symbol für Details. Flüge laden ab Zoomstufe 5 genau, Nahverkehr in Deutschland ab Stufe 10 bis 12.'));
+    s.appendChild(el('p',null,'Karte ziehen und zoomen. Klicke auf ein Symbol für Details. Flüge laden ab Zoomstufe 5 genau, Nahverkehr in Deutschland ab Stufe 7 (Berlin ab 9). Je näher du zoomst, desto größer die Symbole.'));
     var lg=el('ul','legend');
     [['Flugzeug (live)','#e8f6ff'],['Nahverkehr (live, Deutschland)','#3ddc97'],['Kamera-Standort','var(--accent)'],['Live-Webcam (Windy)','var(--accent2)']].forEach(function(r){
       var li=el('li'),sw=el('span','sw'); sw.style.background=r[1]; li.appendChild(sw); li.appendChild(el('span',null,r[0])); lg.appendChild(li)});
@@ -1604,9 +2082,11 @@ function renderPanel(){
     var f=el('form','tools'); f.style.flexWrap='nowrap';
     var inp=el('input','search'); inp.type='password'; inp.id='wkey'; inp.placeholder=getKey()?'Schlüssel gespeichert':'Windy API Key'; inp.autocomplete='off'; inp.style.flex='1 1 auto'; inp.style.width='auto';
     var sb=el('button','btn sm','Speichern'); sb.type='submit'; f.appendChild(inp); f.appendChild(sb);
-    f.addEventListener('submit',function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;store(WKEY,v);inp.value='';inp.placeholder='Schlüssel gespeichert';last.cam=0;updCams()});
+    f.addEventListener('submit',function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;store(WKEY,v);inp.value='';inp.placeholder='Schlüssel gespeichert';last.cam=0;on.cam=true;busy.cam=false;setStatus('cam','Schlüssel wird geprüft …','');updCams()});
     s.appendChild(f);
     var ln=el('div','links'); ln.appendChild(link('Schlüssel bei Windy holen','https://api.windy.com/keys')); s.appendChild(ln);
+    if(getKey()){var kb=el('button','btn sm ghost','Schlüssel entfernen');kb.type='button';kb.addEventListener('click',function(){store(WKEY,'');DATA.win=[];renderCams();setStatus('cam','Schlüssel entfernt','warn');renderPanel()});s.appendChild(kb)}
+    s.appendChild(el('div','note','Wichtig: Der Schlüssel muss für die „Webcams API“ von Windy sein. Ein Schlüssel für „Map Forecast“ funktioniert hier nicht. Die Live-Webcams siehst du nur in der Datei EPSA-Dashboard.html, die du auf deinem Gerät öffnest, nicht in der Vorschau in Claude.'));
     s.appendChild(el('div','note','Quellen: airplanes.live und OpenSky (Flüge), adsbdb (Routen), BVG und Deutsche Bahn über transport.rest (Nahverkehr), Windy Webcams, OpenStreetMap, CARTO, Esri.'));
     return;
   }
@@ -1673,7 +2153,7 @@ function updatePanelLive(){
   }
 }
 
-if(!window.claude&&sstore('epsa.auth')==='1'){CL.me={code:CODE,name:'Admin',admin:true};enter()}
+if(!window.claude){var sa=sstore('epsa.auth'),sm=null;try{sm=JSON.parse(sa)}catch(e){}if(sm&&sm.code){CL.me=sm;enter()}}
 })();
 </script>
 
