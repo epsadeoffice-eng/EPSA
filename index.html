@@ -517,6 +517,183 @@ $('#logoBig').src=LOGO; $('#logoSm').src=LOGO;
 /* ---------- Login ---------- */
 
 /* ---------- Server-Speicher (gemeinsam, pro Profil verschlüsselt) ---------- */
+/* ===== EPSA Cloudflare-Adapter (Datenbank-Anbindung, unverändert) ===== */
+const API_BASE = "https://beckend.epsa-de-office.workers.dev";
+
+function createEPSACloudAdapter(base) {
+  async function request(path, method = "GET", data = null) {
+    const options = {
+      method,
+      headers: { "Content-Type": "application/json" }
+    };
+
+    if (data !== null) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(
+      base + path,
+      options
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Cloudflare-Fehler");
+    }
+
+    return result;
+  }
+
+  function makeSnapshot(result) {
+    const docs = (result.docs || []).map(item => ({
+      id: item.id,
+      data: () => item.data
+    }));
+
+    return {
+      docs,
+      size: docs.length,
+      empty: docs.length === 0,
+      forEach: callback => docs.forEach(callback)
+    };
+  }
+
+  function collection(path) {
+    let sortField = null;
+    let sortDirection = "asc";
+    let maxResults = 1000;
+
+    const api = {
+      doc(id) {
+        return document(path + "/" + id);
+      },
+
+      orderBy(field, direction = "asc") {
+        sortField = field;
+        sortDirection = direction;
+        return api;
+      },
+
+      limit(number) {
+        maxResults = number;
+        return api;
+      },
+
+      async get() {
+        const result = await request(
+          "/api/collection?path=" + encodeURIComponent(path)
+        );
+
+        let docs = result.docs || [];
+
+        if (sortField) {
+          docs.sort((a, b) => {
+            const x = a.data?.[sortField];
+            const y = b.data?.[sortField];
+
+            if (x === y) return 0;
+
+            const comparison = x > y ? 1 : -1;
+            return sortDirection === "desc"
+              ? -comparison
+              : comparison;
+          });
+        }
+
+        return makeSnapshot({
+          docs: docs.slice(0, maxResults)
+        });
+      },
+
+      onSnapshot(callback, errorCallback) {
+        let active = true;
+        let previous = "";
+
+        const refresh = async () => {
+          if (!active) return;
+
+          try {
+            const snapshot = await api.get();
+            const signature = JSON.stringify(
+              snapshot.docs.map(doc => ({
+                id: doc.id,
+                data: doc.data()
+              }))
+            );
+
+            if (signature !== previous) {
+              previous = signature;
+              callback(snapshot);
+            }
+          } catch (error) {
+            if (errorCallback) errorCallback(error);
+          }
+        };
+
+        refresh();
+        const timer = setInterval(refresh, 4000);
+
+        return () => {
+          active = false;
+          clearInterval(timer);
+        };
+      },
+
+      async add(data) {
+        const result = await request(
+          "/api/collection?path=" + encodeURIComponent(path),
+          "POST",
+          data
+        );
+
+        return { id: result.id };
+      }
+    };
+
+    return api;
+  }
+
+  function document(path) {
+    return {
+      async get() {
+        const result = await request(
+          "/api/doc?path=" + encodeURIComponent(path)
+        );
+
+        return {
+          exists: result.exists,
+          data: () => result.data
+        };
+      },
+
+      async set(data) {
+        return request(
+          "/api/doc?path=" + encodeURIComponent(path),
+          "PUT",
+          data
+        );
+      },
+
+      async delete() {
+        return request(
+          "/api/doc?path=" + encodeURIComponent(path),
+          "DELETE"
+        );
+      },
+
+      collection(name) {
+        return collection(path + "/" + name);
+      }
+    };
+  }
+
+  return {
+    doc: document,
+    collection
+  };
+}
+/* ===== Ende Adapter ===== */
 var CL={on:false,db:null,usr:null,me:null,key:null,unsubs:[],canAdmin:false,seq:{akten:0,notes:0,missions:0},last:{akten:{},notes:{},missions:{}},busy:{akten:false,notes:false,missions:false},again:{akten:false,notes:false,missions:false},why:"",adminKnown:false,chatFirst:true,ready:null};
 var CODE='31492', PASS='1324', ADMIN_SALT='EPSA-ADMIN-SALT-v1';
 function b64(buf){var u=new Uint8Array(buf),t='';for(var i=0;i<u.length;i+=8192)t+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(t)}
@@ -549,11 +726,17 @@ function cloudNote(){
   if(CL.on){n.textContent='Server-Speicher aktiv. Deine Daten sind mit deinem Passwort verschlüsselt.';n.className='cnote on';return}
   n.className='cnote'+(window.claude?' warn':'');
   n.appendChild(document.createTextNode(CL.why||'Lokaler Modus. Daten und Profile bleiben in diesem Browser.'));
-  if(window.claude){var rb=el('button','btn sm ghost','Erneut prüfen');rb.type='button';rb.style.marginTop='8px';rb.addEventListener('click',function(){rb.disabled=true;CL.ready=initCloud().then(cloudNote)});n.appendChild(document.createElement('br'));n.appendChild(rb)}
+  if(window.claude||CL.workerTried){var rb=el('button','btn sm ghost','Erneut prüfen');rb.type='button';rb.style.marginTop='8px';rb.addEventListener('click',function(){rb.disabled=true;CL.ready=initCloud().then(cloudNote)});n.appendChild(document.createElement('br'));n.appendChild(rb)}
 }
 function initCloud(){
   CL.why='';
-  if(!window.claude||!window.claude.use){CL.why='Lokaler Modus. Es gibt keinen Server-Speicher, weil die Seite nicht im Claude-Fenster läuft (Datei oder eigener Browser-Tab). Öffne sie direkt in Claude.';return Promise.resolve()}
+  if(!window.claude||!window.claude.use){
+    if(!(window.crypto&&crypto.subtle)){CL.why='Lokaler Modus. Dieser Browser bietet keine Verschlüsselung (WebCrypto). Dafür muss die Seite über https oder als Datei geöffnet werden.';return Promise.resolve()}
+    CL.workerTried=true; var ad=createEPSACloudAdapter(API_BASE);
+    return withTimeout(ad.collection('chat').limit(1).get(),9000).then(function(){
+      CL.db=ad; CL.usr={can:function(){return Promise.resolve(true)},canEdit:function(){return Promise.resolve(true)}}; CL.on=true;
+    }).catch(function(e){CL.why='Lokaler Modus. Der Cloudflare-Server ist nicht erreichbar ['+((e&&e.message)||(e&&e.code)||'Fehler')+'].'});
+  }
   if(!(window.crypto&&crypto.subtle)){CL.why='Lokaler Modus. Dieser Rahmen bietet keine Verschlüsselung (WebCrypto). Server-Speicher ist deshalb aus.';return Promise.resolve()}
   return Promise.all([claude.use('db'),claude.use('user')]).then(function(r){
     CL.db=r[0];CL.usr=r[1];CL.on=!!CL.db;
@@ -733,7 +916,7 @@ function startProfiles(){
 function deleteProfile(code){
   return CL.db.doc('profiles/'+code).delete().then(function(){
     var base=CL.db.doc('userdata/'+code); var p=Promise.resolve();
-    ['akten','notes'].forEach(function(k){p=p.then(function(){return base.collection(k).get()}).then(function(s){var q=Promise.resolve();s.docs.forEach(function(d){q=q.then(function(){return base.collection(k).doc(d.id).delete()})});return q})});
+    ['akten','notes','missions'].forEach(function(k){p=p.then(function(){return base.collection(k).get()}).then(function(s){var q=Promise.resolve();s.docs.forEach(function(d){q=q.then(function(){return base.collection(k).doc(d.id).delete()})});return q})});
     return p;
   });
 }
@@ -2153,7 +2336,7 @@ function updatePanelLive(){
   }
 }
 
-if(!window.claude){var sa=sstore('epsa.auth'),sm=null;try{sm=JSON.parse(sa)}catch(e){}if(sm&&sm.code){CL.me=sm;enter()}}
+if(!window.claude){CL.ready.then(function(){if(CL.on)return;var sa=sstore('epsa.auth'),sm=null;try{sm=JSON.parse(sa)}catch(e){}if(sm&&sm.code){CL.me=sm;enter()}})}
 })();
 </script>
 
