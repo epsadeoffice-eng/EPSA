@@ -406,6 +406,7 @@ main{padding-block:22px 48px}
         <div class="field"><label class="lbl" for="pName">Name</label><input id="pName" maxlength="40" required></div>
         <div class="field"><label class="lbl" for="pCode">Zugangscode (3 bis 20 Zeichen, Ziffern oder Buchstaben)</label><input id="pCode" maxlength="20" required></div>
         <div class="field"><label class="lbl" for="pPw">Passwort (mindestens 4 Zeichen)</label><input id="pPw" type="password" maxlength="60" required></div>
+        <label id="pCanWrap" style="display:flex;gap:10px;align-items:flex-start;margin:6px 0"><input type="checkbox" id="pCan" style="margin-top:3px"><span>Diese Person darf selbst Profile erstellen und sieht den Profile-Tab. Sie verwaltet nur die Profile, die sie selbst angelegt hat.</span></label>
         <div class="note">Das Passwort ist der Schlüssel für die Daten dieses Profils. Es lässt sich nicht zurücksetzen. Wer es vergisst, verliert die Daten. Wähle lieber ein langes Passwort.</div>
         <div class="err" id="pErr" role="alert"></div>
         <button class="btn primary" type="submit">Profil anlegen</button>
@@ -756,39 +757,43 @@ function lhash(code,pw,salt){
 }
 function localProfiles(){try{var o=JSON.parse(store('epsa.profiles.v1')||'{}');return (o&&typeof o==='object')?o:{}}catch(e){return {}}}
 function saveLocalProfiles(o){return store('epsa.profiles.v1',JSON.stringify(o))}
-function createLocalProfile(name,code,pw,err){
+function createLocalProfile(name,code,pw,err,cc){
   var all=localProfiles(); if(all[code]){err.textContent='Diesen Code gibt es schon.';return}
   var salt=rnd();
   lhash(code,pw,salt).then(function(h){
-    all[code]={name:name.slice(0,40),salt:salt,h:h,created:Date.now()};
+    all[code]={name:name.slice(0,40),salt:salt,h:h,created:Date.now(),createdBy:CL.me.code,canCreate:!!cc};
     if(!saveLocalProfiles(all)){err.textContent='Dieser Browser lässt kein Speichern zu.';return}
     $('#profForm').reset(); err.style.color='var(--ok)'; err.textContent='Lokales Profil „'+name+'“ angelegt. Es gilt nur in diesem Browser.'; renderLocalProfiles();
   });
 }
 function renderLocalProfiles(){
-  var l=$('#profList'); l.textContent=''; var all=localProfiles(), codes=Object.keys(all);
+  var l=$('#profList'); l.textContent=''; var all=localProfiles(), adm=CL.me&&CL.me.admin;
+  var codes=Object.keys(all).filter(function(k){return adm||all[k].createdBy===CL.me.code});
   $('#profCount').textContent=codes.length+' lokale Profile';
   if(!codes.length){l.appendChild(el('div','empty','Noch keine Profile. Lege oben das erste an.'));return}
   codes.forEach(function(code){
     var x=all[code], c=el('div','ncard'); c.appendChild(el('h3',null,String(x.name||code)));
-    var m=el('div','meta','Zugangscode '+code+'\nnur in diesem Browser'); m.style.whiteSpace='pre-line'; c.appendChild(m);
+    var m=el('div','meta','Zugangscode '+code+'\nnur in diesem Browser'+(x.canCreate?'\ndarf Profile erstellen':'')+(adm&&x.createdBy?'\nangelegt von '+x.createdBy:'')); m.style.whiteSpace='pre-line'; c.appendChild(m);
+    var row=el('div','acts');
+    if(adm){var tg=el('button','btn sm ghost',x.canCreate?'Erstellen entziehen':'Erstellen erlauben');tg.type='button';tg.addEventListener('click',function(){var o=localProfiles();if(o[code]){o[code].canCreate=!o[code].canCreate;saveLocalProfiles(o);renderLocalProfiles()}});row.appendChild(tg)}
     var del=el('button','btn sm danger','Profil löschen'); del.type='button'; var armed=false;
     del.addEventListener('click',function(){
       if(!armed){armed=true;del.textContent='Wirklich löschen? Alle Daten gehen verloren.';return}
-      delete all[code]; saveLocalProfiles(all);
+      var o=localProfiles(); delete o[code]; saveLocalProfiles(o);
       ['epsa.akten.v1','epsa.notes.v1','epsa.missions.v1'].forEach(function(b){try{localStorage.removeItem(b+'.'+code)}catch(e){}});
       renderLocalProfiles();
     });
-    c.appendChild(del); l.appendChild(c);
+    row.appendChild(del); c.appendChild(row); l.appendChild(c);
   });
 }
+
 
 function tryLogin(c,p){
   var isAdmin=(c===CODE&&p===PASS);
   if(!CL.on){
     if(isAdmin)return Promise.resolve({ok:true,me:{code:c,name:'Admin',admin:true}});
     var lp=localProfiles()[c]; if(!lp)return Promise.resolve({});
-    return lhash(c,p,lp.salt).then(function(h){return h===lp.h?{ok:true,me:{code:c,name:String(lp.name||c),admin:false}}:{}});
+    return lhash(c,p,lp.salt).then(function(h){return h===lp.h?{ok:true,me:{code:c,name:String(lp.name||c),admin:false,canCreate:!!lp.canCreate}}:{}});
   }
   if(isAdmin)return deriveKey(c,p,new TextEncoder().encode(ADMIN_SALT)).then(function(k){return {ok:true,key:k,me:{code:c,name:'Admin',admin:true}}});
   if(!/^[A-Za-z0-9_-]{3,20}$/.test(c))return Promise.resolve({});
@@ -798,7 +803,7 @@ function tryLogin(c,p){
     return deriveKey(c,p,unb64(d.salt)).then(function(k){
       return dec(k,d.check).then(function(chk){
         if(!chk||chk.ok!=='EPSA')return {};
-        return {ok:true,key:k,me:{code:c,name:String(d.name||c).slice(0,40),admin:false}};
+        return {ok:true,key:k,me:{code:c,name:String(d.name||c).slice(0,40),admin:false,canCreate:d.canCreate===true}};
       });
     });
   });
@@ -833,14 +838,14 @@ function cloudSync(kind){
 }
 function startData(){
   applyRole();
-  if(!CL.on){loadRecs();loadNotes();loadMissions();renderRecs();renderNotes();renderMissions();pinNotes();if(CL.me&&CL.me.admin)renderLocalProfiles();return}
+  if(!CL.on){loadRecs();loadNotes();loadMissions();renderRecs();renderNotes();renderMissions();pinNotes();if(mayCreate())renderLocalProfiles();return}
   recs=[];notes=[];missions=[];renderRecs();renderNotes();renderMissions();pinNotes();
   CL.last={akten:{},notes:{},missions:{}}; CL.chatFirst=true;
   subColl('akten',function(a){recs=a;renderRecs()});
   subColl('notes',function(a){notes=a;renderNotes();pinNotes()});
   subColl('missions',function(a){missions=a;renderMissions()});
   startChat();
-  if(CL.me.admin)startProfiles();
+  if(mayCreate())startProfiles();
   if(CL.usr){
     CL.usr.can('data.write').then(function(v){if(v===false)setBanner('Du hast nur Leserechte. Der Besitzer muss dir Mitwirken-Rechte geben, damit du speichern und chatten kannst.')});
     CL.usr.canEdit().then(function(v){CL.canAdmin=!!v;CL.adminKnown=true;applyRole()});
@@ -851,10 +856,11 @@ function stopData(){
   CL.me=null;CL.key=null;CL.canAdmin=false;recs=[];notes=[];missions=[];setBanner('');memFallback=null;nMem=null;mMem=null;
   $('#msgs').textContent='';$('#profList').textContent='';
 }
+function mayCreate(){return !!(CL.me&&(CL.me.admin||CL.me.canCreate))}
 function applyRole(){
-  var me=CL.me;
+  var me=CL.me; $('#pCanWrap').hidden=!(me&&me.admin);
   $('#who').textContent=me?(me.name+' · '+(CL.on?'Server':'lokal')):'';
-  $('#tab-profiles').hidden=!(me&&me.admin);
+  $('#tab-profiles').hidden=!mayCreate();
   $('#bkLocal').hidden=!CL.on;
 }
 
@@ -897,18 +903,23 @@ var profUnsub=null;
 function startProfiles(){
   if(profUnsub)return;
   profUnsub=CL.db.collection('profiles').onSnapshot(function(snap){
-    var l=$('#profList'); l.textContent=''; $('#profCount').textContent=snap.size+' Profile';
-    if(!snap.size){l.appendChild(el('div','empty','Noch keine Profile. Lege oben das erste an.'));return}
-    snap.docs.forEach(function(d){
+    var l=$('#profList'); l.textContent=''; var adm=CL.me&&CL.me.admin;
+    var docs=snap.docs.filter(function(d){var x=d.data()||{};return adm||x.createdBy===CL.me.code});
+    $('#profCount').textContent=docs.length+' Profile';
+    if(!docs.length){l.appendChild(el('div','empty','Noch keine Profile. Lege oben das erste an.'));return}
+    docs.forEach(function(d){
       var x=d.data()||{}, c=el('div','ncard');
       c.appendChild(el('h3',null,String(x.name||d.id)));
-      var m=el('div','meta','Zugangscode '+d.id+(isFinite(x.created)?'\nangelegt '+new Date(x.created).toLocaleDateString('de-DE'):'')); m.style.whiteSpace='pre-line'; c.appendChild(m);
+      var m=el('div','meta','Zugangscode '+d.id+(isFinite(x.created)?'\nangelegt '+new Date(x.created).toLocaleDateString('de-DE'):'')+(x.canCreate===true?'\ndarf Profile erstellen':'')+(adm&&x.createdBy?'\nangelegt von '+x.createdBy:'')); m.style.whiteSpace='pre-line'; c.appendChild(m);
+      var row=el('div','acts');
+      if(adm){var tg=el('button','btn sm ghost',x.canCreate===true?'Erstellen entziehen':'Erstellen erlauben');tg.type='button';
+        tg.addEventListener('click',function(){var n=JSON.parse(JSON.stringify(x));n.canCreate=!(x.canCreate===true);CL.db.doc('profiles/'+d.id).set(n).catch(function(e){setBanner(writeErr(e))})});row.appendChild(tg)}
       var del=el('button','btn sm danger','Profil löschen'); del.type='button'; var armed=false;
       del.addEventListener('click',function(){
         if(!armed){armed=true;del.textContent='Wirklich löschen? Alle Daten gehen verloren.';return}
         deleteProfile(d.id).catch(function(e){setBanner(writeErr(e))});
       });
-      c.appendChild(del); l.appendChild(c);
+      row.appendChild(del); c.appendChild(row); l.appendChild(c);
     });
   },function(e){setBanner('Profile nicht erreichbar ('+((e&&e.code)||'Fehler')+').')});
   CL.unsubs.push(function(){if(profUnsub){profUnsub();profUnsub=null}});
@@ -922,17 +933,18 @@ function deleteProfile(code){
 }
 $('#profForm').addEventListener('submit',function(ev){
   ev.preventDefault(); var err=$('#pErr'); err.style.color='var(--bad)'; err.textContent='';
-  var name=$('#pName').value.trim(), code=$('#pCode').value.trim(), pw=$('#pPw').value;
+  if(!mayCreate()){err.textContent='Du darfst keine Profile erstellen.';return}
+  var name=$('#pName').value.trim(), code=$('#pCode').value.trim(), pw=$('#pPw').value, cc=!!(CL.me.admin&&$('#pCan').checked);
   if(!name){err.textContent='Bitte einen Namen eintragen.';return}
   if(!/^[A-Za-z0-9_-]{3,20}$/.test(code)){err.textContent='Der Code braucht 3 bis 20 Zeichen: Ziffern, Buchstaben, - oder _.';return}
   if(code===CODE){err.textContent='Dieser Code ist für den Admin reserviert.';return}
   if(pw.length<4){err.textContent='Das Passwort braucht mindestens 4 Zeichen.';return}
-  if(!CL.on){createLocalProfile(name,code,pw,err);return}
+  if(!CL.on){createLocalProfile(name,code,pw,err,cc);return}
   var salt=crypto.getRandomValues(new Uint8Array(16));
   CL.db.doc('profiles/'+code).get().then(function(ex){
     if(ex.exists){err.textContent='Diesen Code gibt es schon.';return}
     return deriveKey(code,pw,salt).then(function(k){return enc(k,{ok:'EPSA'})}).then(function(check){
-      return CL.db.doc('profiles/'+code).set({name:name.slice(0,40),salt:b64(salt),check:check,created:Date.now()});
+      var pd={name:name.slice(0,40),salt:b64(salt),check:check,created:Date.now(),createdBy:CL.me.code}; if(cc)pd.canCreate=true; return CL.db.doc('profiles/'+code).set(pd);
     }).then(function(){$('#profForm').reset();err.style.color='var(--ok)';err.textContent='Profil „'+name+'“ angelegt. Gib Code und Passwort an die Person weiter.'});
   }).catch(function(e){err.textContent=writeErr(e)});
 });
@@ -1009,7 +1021,7 @@ function showView(v){
   if(v==='profiles'){
     var pi=$('#profInfo');
     if(!CL.on){pi.hidden=false;pi.textContent=(CL.why||'Lokaler Modus.')+' Profile, die du hier anlegst, gelten nur in diesem Browser.';renderLocalProfiles()}
-    else if(CL.adminKnown&&!CL.canAdmin){pi.hidden=false;pi.textContent='Dein Claude-Konto hat keine Bearbeiten-Rechte auf dieser Seite. Ohne sie kann sie keine Profile auf dem Server anlegen. Öffne die Seite mit dem Eigentümer-Konto.'}
+    else if(CL.me&&CL.me.admin&&CL.adminKnown&&!CL.canAdmin){pi.hidden=false;pi.textContent='Dein Claude-Konto hat keine Bearbeiten-Rechte auf dieser Seite. Ohne sie kann sie keine Profile auf dem Server anlegen. Öffne die Seite mit dem Eigentümer-Konto.'}
     else pi.hidden=true;
   }
 }
@@ -2010,7 +2022,7 @@ function initMap(){
   });
   base.dark.addTo(map);
   LG.cover=L.layerGroup().addTo(map); LG.route=L.layerGroup().addTo(map);
-  LG.cam=L.layerGroup().addTo(map); LG.tr=L.layerGroup().addTo(map); LG.fl=L.layerGroup().addTo(map); LG.notes=L.layerGroup().addTo(map);
+  LG.line=L.layerGroup().addTo(map); LG.cam=L.layerGroup().addTo(map); LG.tr=L.layerGroup().addTo(map); LG.fl=L.layerGroup().addTo(map); LG.notes=L.layerGroup().addTo(map);
 
   FX.project=function(lat,lon){var q=map.latLngToContainerPoint([lat,lon]);return [q.x,q.y]};
   var cont=map.getContainer(), sd=null;
@@ -2159,10 +2171,11 @@ function updTransit(){
   var z=map.getZoom(), b=map.getBounds(), c=map.getCenter(), lng=wrapLon(c.lng);
   var inBer=c.lat>52.2&&c.lat<52.8&&lng>12.9&&lng<13.9, inDE=c.lat>47.2&&c.lat<55.1&&lng>5.8&&lng<15.1;
   if(!inDE){dropPool(POOL.tr,{},LG.tr);DATA.tr=[];setStatus('tr','Live-Fahrzeuge gibt es hier nur in Deutschland. Springe zu Berlin.','warn');return}
+  var inRN=c.lat>49.0&&c.lat<49.9&&lng>7.9&&lng<9.2, vrn=inRN&&!inBer?getVrn():'';
   var minZ=inBer?9:7;
   if(z<minZ){dropPool(POOL.tr,{},LG.tr);DATA.tr=[];setStatus('tr','sichtbar ab Zoomstufe '+minZ+(inBer?' (Berlin, alle Linien)':' (Deutschland, Bahn und Regionalverkehr)'),'warn');return}
   busy.tr=true;
-  var host=inBer?'https://v6.bvg.transport.rest':'https://v6.db.transport.rest';
+  var host=inBer?'https://v6.bvg.transport.rest':(vrn||'https://v6.db.transport.rest');
   var url=host+'/radar?north='+b.getNorth().toFixed(5)+'&west='+b.getWest().toFixed(5)+'&south='+b.getSouth().toFixed(5)+'&east='+b.getEast().toFixed(5)+'&results=512&duration=30&frames=1&polylines=false&language=de';
   jget(url,null,15000).then(function(d){
     var list=(d.movements||[]).filter(function(m){return m.location&&num(m.location.latitude)&&num(m.location.longitude)}).map(function(m){
@@ -2171,8 +2184,88 @@ function updTransit(){
         next:ns&&ns.stop&&ns.stop.name,arr:ns&&(ns.arrival||ns.plannedArrival),delay:ns&&num(ns.arrivalDelay)?Math.round(ns.arrivalDelay/60):null};
     });
     DATA.tr=list; renderTransit(list);
-    setStatus('tr',list.length+' Fahrzeuge live · '+(inBer?'BVG':'Deutsche Bahn')+' · '+nowT(),'ok'); updatePanelLive();
+    setStatus('tr',list.length+' Fahrzeuge live · '+(inBer?'BVG':(vrn?'VRN':'Deutsche Bahn'))+' · '+nowT()+((inRN&&!vrn)?' · Bus und Tram im VRN-Gebiet brauchen die VRN-Adresse (Seitenleiste)':''),(inRN&&!vrn)?'warn':'ok'); updatePanelLive(); renderLineHits();
   }).catch(function(e){setStatus('tr',errText(e),'bad')}).then(function(){busy.tr=false;last.tr=Date.now()});
+}
+var lineQ='', OSM={tok:0,cur:null};
+var OSMT={bus:'Bus',tram:'Tram',subway:'U-Bahn',light_rail:'S-Bahn',train:'Zug',trolleybus:'Obus',ferry:'Fähre'};
+var OCOL={bus:'#9a8cff',tram:'#ff4d5e',subway:'#3cc8ff',light_rail:'#3ddc97',train:'#ffb020',trolleybus:'#9a8cff',ferry:'#8fe6ff'};
+var OREL='relation["type"="route"]["route"~"^(bus|tram|subway|light_rail|train|trolleybus|ferry)$"]';
+function rxEsc(q){return q.replace(/[.*+?^${}()|[\]\\"]/g,'\\$&')}
+function ovp(query){
+  var qs='?data='+encodeURIComponent(query);
+  return jget('https://overpass-api.de/api/interpreter'+qs,null,25000).catch(function(){return jget('https://overpass.kumi.systems/api/interpreter'+qs,null,25000)});
+}
+function osmBox(){var b=map.getBounds();return [b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(x){return x.toFixed(4)}).join(',')}
+function osmLabel(t){return (t.ref?t.ref:'?')+' · '+(OSMT[t.route]||t.route)+(t.from||t.to?' · '+(t.from||'?')+' → '+(t.to||'?'):(t.name?' · '+t.name:''))}
+function clearLine(){LG.line.clearLayers();OSM.cur=null;var i=$('#osmInfo');if(i)i.textContent=''}
+function drawRoute(id,tags){
+  var info=$('#osmInfo'); if(info)info.textContent='Strecke wird geladen …';
+  ovp('[out:json][timeout:30];relation('+id+');out geom;').then(function(d){
+    var r=d.elements&&d.elements[0]; if(!r)throw new Error('Linie nicht gefunden');
+    LG.line.clearLayers(); var col=(/^#[0-9a-fA-F]{3,8}$/.test((tags&&tags.colour)||'')?tags.colour:OCOL[(tags&&tags.route)||'bus']||'#ffb020'), all=[];
+    (r.members||[]).forEach(function(m){
+      if(m.type==='way'&&m.geometry&&String(m.role||'').indexOf('platform')<0){
+        var pts=m.geometry.filter(function(p){return p&&num(p.lat)}).map(function(p){return [p.lat,p.lon]}); if(pts.length<2)return;
+        L.polyline(pts,{color:'#04121c',weight:8,opacity:.7,interactive:false}).addTo(LG.line);
+        L.polyline(pts,{color:col,weight:4.5,opacity:.95,interactive:false}).addTo(LG.line); all=all.concat(pts);
+      }
+    });
+    (r.members||[]).forEach(function(m){
+      if(m.type==='node'&&/^stop/.test(m.role||'')&&num(m.lat)){L.circleMarker([m.lat,m.lon],{radius:4,color:'#04121c',weight:1.5,fillColor:'#fff',fillOpacity:1,interactive:false}).addTo(LG.line)}
+    });
+    if(!all.length)throw new Error('Für diese Linie fehlt die Streckenführung in OpenStreetMap');
+    OSM.cur=id; map.fitBounds(L.latLngBounds(all),{padding:[40,40],maxZoom:15});
+    var t=r.tags||tags||{};
+    if(info){info.textContent='';info.appendChild(el('div','lbl','Strecke angezeigt'));info.appendChild(el('h3',null,osmLabel(t)));
+      var rows=[['Betreiber',t.operator||t.network||'unbekannt']];info.appendChild(rowsDl(rows));
+      var cb=el('button','btn sm ghost','Strecke ausblenden');cb.type='button';cb.addEventListener('click',clearLine);info.appendChild(cb)}
+  }).catch(function(e){if(info)info.textContent='Strecke konnte nicht geladen werden: '+errText(e)});
+}
+function osmSearch(q){
+  var box=$('#osmHits'); if(!box)return; box.textContent=''; var my=++OSM.tok;
+  if(!q)return;
+  if(map.getZoom()<9){box.appendChild(el('div','note','Zoome etwas näher heran (ab Stufe 9), um Linien in diesem Gebiet zu suchen.'));return}
+  box.appendChild(el('div','note','Suche Linien im Kartenausschnitt …'));
+  var e=rxEsc(q), bb=osmBox();
+  var query='[out:json][timeout:25];('+OREL+'["ref"~"^'+e+'$",i]('+bb+');'+OREL+'["to"~"'+e+'",i]('+bb+');'+OREL+'["name"~"'+e+'",i]('+bb+'););out tags center 60;';
+  ovp(query).then(function(d){
+    if(my!==OSM.tok)return; box.textContent='';
+    var els=(d.elements||[]).filter(function(x){return x.tags}), seen={}, list=[];
+    els.forEach(function(x){var k=osmLabel(x.tags);if(!seen[k]){seen[k]=1;list.push(x)}});
+    list.sort(function(a,b){return osmLabel(a.tags)<osmLabel(b.tags)?-1:1});
+    if(!list.length){box.appendChild(el('div','note','Keine Linie „'+q+'“ im Kartenausschnitt in OpenStreetMap gefunden. Verschiebe die Karte oder zoome heraus.'));return}
+    box.appendChild(el('div','lbl',list.length+' Linien in diesem Ausschnitt (OpenStreetMap)'));
+    var c=el('div','chips');
+    list.slice(0,40).forEach(function(x){var b=el('button','chip',osmLabel(x.tags));b.type='button';b.addEventListener('click',function(){drawRoute(x.id,x.tags)});c.appendChild(b)});
+    box.appendChild(c);
+  }).catch(function(err){if(my===OSM.tok){box.textContent='';box.appendChild(el('div','note','Liniensuche: '+errText(err)))}});
+}
+function showVehLine(v){
+  var info=$('#osmInfo'); if(info)info.textContent='Suche Strecke …';
+  var e=rxEsc(String(v.line)), d=0.15, bb=[v.lat-d,v.lon-d,v.lat+d,v.lon+d].map(function(x){return x.toFixed(4)}).join(',');
+  ovp('[out:json][timeout:25];'+OREL+'["ref"~"^'+e+'$",i]('+bb+');out tags center 40;').then(function(r){
+    var els=(r.elements||[]).filter(function(x){return x.tags});
+    if(!els.length)throw new Error('Diese Linie ist in OpenStreetMap hier nicht eingetragen');
+    var dir=String(v.dir||'').toLowerCase(), pick=els.filter(function(x){var t=String(x.tags.to||'').toLowerCase();return t&&dir&&(dir.indexOf(t)>=0||t.indexOf(dir)>=0)})[0]||els[0];
+    drawRoute(pick.id,pick.tags);
+  }).catch(function(err){if(info)info.textContent='Strecke: '+errText(err)});
+}
+function getVrn(){var k=store('epsa.vrnhost');return k&&/^https:\/\//.test(k)?k.replace(/\/+$/,''):''}
+function lineMatches(v){return !lineQ||String(v.line).toLowerCase().indexOf(lineQ)>=0||String(v.dir).toLowerCase().indexOf(lineQ)>=0}
+function renderLineHits(){
+  var h=$('#lineHits'); if(!h)return; h.textContent=''; if(!lineQ)return;
+  if(!DATA.tr.length){h.appendChild(el('div','note','Zoome nach Deutschland (ab Stufe 7). Dann erscheinen die Fahrzeuge zum Suchen.'));return}
+  var hits=DATA.tr.filter(lineMatches);
+  if(!hits.length){h.appendChild(el('div','note','Keine Fahrzeuge im Ausschnitt mit „'+lineQ+'“. Verschiebe oder zoome die Karte.'));return}
+  h.appendChild(el('div','lbl',hits.length+' Fahrzeuge gefunden'));
+  var box=el('div','chips');
+  hits.slice(0,25).forEach(function(v){
+    var b=el('button','chip',v.line+(v.dir?' → '+v.dir:'')); b.type='button';
+    b.addEventListener('click',function(){map.setView([v.lat,v.lon],Math.max(map.getZoom(),14));sel={type:'tr',id:v.id};LG.route.clearLayers();renderTransit(DATA.tr,true);renderPanel()});
+    box.appendChild(b);
+  });
+  h.appendChild(box);
 }
 function vehIcon(v,isSel){
   var z=map.getZoom(), sz=zs(14,28,7,16), lab=z>=11||isSel, hb=Math.max(44,sz+22);
@@ -2183,6 +2276,7 @@ function vehIcon(v,isSel){
   return L.divIcon({className:'vh',html:e,iconSize:[hb,hb],iconAnchor:[hb/2,hb/2]});
 }
 function renderTransit(list,restyle){
+  list=list.filter(function(v){return lineMatches(v)||(sel&&sel.type==='tr'&&sel.id===v.id)});
   var keep={}, gl=restyle?0:5500, z=map.getZoom();
   list.forEach(function(v){
     var isSel=sel&&sel.type==='tr'&&sel.id===v.id, m=POOL.tr[v.id]; keep[v.id]=1;
@@ -2260,7 +2354,24 @@ function renderPanel(){
     [['Flugzeug (live)','#e8f6ff'],['Nahverkehr (live, Deutschland)','#3ddc97'],['Kamera-Standort','var(--accent)'],['Live-Webcam (Windy)','var(--accent2)']].forEach(function(r){
       var li=el('li'),sw=el('span','sw'); sw.style.background=r[1]; li.appendChild(sw); li.appendChild(el('span',null,r[0])); lg.appendChild(li)});
     s.appendChild(lg);
+    s.appendChild(el('div','lbl','Linie suchen (Nahverkehr)'));
+    var lf=el('form','tools'); lf.style.flexWrap='nowrap';
+    var li=el('input','search'); li.type='search'; li.id='lineQ'; li.placeholder='Linie in deiner Stadt, z. B. 5, S1, 61 oder Ziel'; li.autocomplete='off'; li.value=lineQ; li.style.flex='1 1 auto'; li.style.width='auto';
+    lf.appendChild(li); lf.addEventListener('submit',function(e){e.preventDefault()}); s.appendChild(lf);
+    var hits=el('div',null); hits.id='lineHits'; s.appendChild(hits);
+    var oh=el('div',null); oh.id='osmHits'; s.appendChild(oh); var oi0=el('div',null); oi0.id='osmInfo'; s.appendChild(oi0);
+    if(lineQ)osmSearch(lineQ);
+    var lt=0; li.addEventListener('input',function(){clearTimeout(lt);lt=setTimeout(function(){lineQ=li.value.trim().toLowerCase();renderTransit(DATA.tr,true);renderLineHits();osmSearch(lineQ)},500)});
+    renderLineHits();
+    var rn=el('button','btn sm ghost','Zu Rhein-Neckar (Mannheim)'); rn.type='button'; rn.addEventListener('click',function(){map.setView([49.4875,8.466],12)}); s.appendChild(rn);
     if(clickPosLive){s.appendChild(el('div','lbl','Position '+fmtLat(clickPosLive[0])+' '+fmtLon(clickPosLive[1])));var nb2=el('button','btn sm','Notiz an dieser Stelle anlegen');nb2.type='button';nb2.addEventListener('click',function(){startNoteAt(clickPosLive[0],clickPosLive[1])});s.appendChild(nb2)}
+    s.appendChild(el('div','lbl','VRN-Adresse (Bus und Tram Rhein-Neckar)'));
+    var vf=el('form','tools'); vf.style.flexWrap='nowrap';
+    var vi=el('input','search'); vi.type='url'; vi.placeholder=getVrn()?getVrn():'https://dein-vrn-server.de'; vi.autocomplete='off'; vi.style.flex='1 1 auto'; vi.style.width='auto';
+    var vb=el('button','btn sm','Speichern'); vb.type='submit'; vf.appendChild(vi); vf.appendChild(vb);
+    vf.addEventListener('submit',function(e){e.preventDefault();var v=vi.value.trim();if(v&&!/^https:\/\//.test(v)){vi.setCustomValidity('Bitte mit https:// beginnen');vi.reportValidity();return}vi.setCustomValidity('');store('epsa.vrnhost',v);last.tr=0;updTransit();renderPanel()});
+    s.appendChild(vf);
+    s.appendChild(el('div','note','Die Adresse muss eine hafas-rest-api mit VRN-Profil sein (Leer lassen zum Entfernen).'));
     s.appendChild(el('div','lbl','Webcam-Schlüssel (kostenlos)'));
     var f=el('form','tools'); f.style.flexWrap='nowrap';
     var inp=el('input','search'); inp.type='password'; inp.id='wkey'; inp.placeholder=getKey()?'Schlüssel gespeichert':'Windy API Key'; inp.autocomplete='off'; inp.style.flex='1 1 auto'; inp.style.width='auto';
@@ -2301,6 +2412,9 @@ function renderPanel(){
   if(sel.type==='tr'){
     s.appendChild(el('div','lbl','Nahverkehr live')); var h=el('h3',null,'Fahrzeug'); panelLive.title=h; s.appendChild(h);
     s.appendChild(rowsDl([['Richtung','','dir'],['Nächster Halt','','next'],['Ankunft','','arr'],['Verspätung','','delay'],['Position','','pos']]));
+    var vv=null; for(var vi2=0;vi2<DATA.tr.length;vi2++)if(DATA.tr[vi2].id===sel.id)vv=DATA.tr[vi2];
+    if(vv){var sb2=el('button','btn sm primary','Strecke dieser Linie zeigen');sb2.type='button';sb2.addEventListener('click',function(){showVehLine(vv)});s.appendChild(sb2)}
+    var oi=el('div',null); oi.id='osmInfo'; s.appendChild(oi); if(OSM.cur)oi.appendChild(el('div','note','Eine Strecke ist auf der Karte markiert.'));
     updatePanelLive();
   }
 }
